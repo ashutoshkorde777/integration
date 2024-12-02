@@ -5,8 +5,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import Home from './pages/Home';
-// import AddEmployee from './pages/employee';
 import Layout from './Layout.jsx';
+import EmployeeDashboard from "./pages/employee/EmployeeDashboard.jsx";
 
 const App = () => {
     const dispatch = useDispatch();
@@ -26,7 +26,7 @@ const App = () => {
                 <Route element={<PrivateRoute />}>
                     <Route element={<Layout />}>
                         <Route path="/" element={<Home />} />
-                        {/*<Route path="/add-employee" element={<AddEmployee />} />*/}
+                        <Route path="/employees" element={<EmployeeDashboard />} />
                     </Route>
                 </Route>
 

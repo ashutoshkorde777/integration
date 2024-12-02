@@ -1,7 +1,7 @@
 import express from "express";
 import {
     addEmployee,
-    deleteEmployee,
+    deleteEmployee, getAllEmployees,
     loginEmployee,
     logoutEmployee,
     updateEmployee
@@ -12,8 +12,9 @@ const router = express.Router()
 
 router.post('/addEmployee',authMiddleware, addEmployee);
 router.post('/loginEmployee', loginEmployee);
-router.get('/logoutEmployee', logoutEmployee);
+router.post('/logoutEmployee', logoutEmployee);
 router.post('/deleteEmployee',authMiddleware, deleteEmployee);
 router.post('/updateEmployee',authMiddleware, updateEmployee);
+router.get('/getAllEmployees', getAllEmployees);
 
 export default router

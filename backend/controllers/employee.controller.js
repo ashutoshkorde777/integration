@@ -108,7 +108,6 @@ export const loginEmployee = asyncHandler(async (req, res) => {
         const [employeeAccess] = await connection.promise().query(`SELECT employeeAccess FROM employee WHERE employeeId = ${employee.employeeId}`);
         const accessString = employeeAccess[0].employeeAccess;
 
-        // Return refreshToken in response (or store it in cookies if needed)
         res.json({ refreshToken, accessToken, accessString });
     });
 });
@@ -117,7 +116,6 @@ export const logoutEmployee = asyncHandler(async (req, res) => {
     res.clearCookie('accessToken', { path: '/', httpOnly: true, secure: true });
     res.status(200).json({ message: 'Logged out successfully' });
 });
-
 
 export const deleteEmployee = asyncHandler(async (req, res) => {
     const { employeeId } = req.body;
@@ -210,3 +208,15 @@ export const updateEmployee = asyncHandler(async (req, res) => {
     res.status(200).json({ message: "Employee and job profiles updated successfully" });
 });
 
+export const getAllEmployees = asyncHandler(async (req, res) => {
+    const token = req.cookies.accessToken;
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const empQuery = `SELECT employeeId, customEmployeeId, employeeName, companyName, employeeQualification, experienceInYears, employeeDOB, employeeJoinDate, employeeGender, employeePhone, employeeEmail, employeeAccess, employeeRefreshToken, employeeEndDate FROM employee WHERE employeeEndDate IS NULL;`
+
+    const [employees] = await connection.promise().query(empQuery);
+
+    res.status(200).json(new ApiResponse(200, employees, 'All employees Fetched successfully.'));
+})
