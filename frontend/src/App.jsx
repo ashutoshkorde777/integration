@@ -9,6 +9,8 @@ import Layout from './Layout.jsx';
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard.jsx";
 import EmployeeProfile from "./pages/employee/EmployeeProfile.jsx";
 import AddEmployee from "./pages/employee/AddEmployee.jsx";
+import EditEmployeePage from "./pages/employee/EditEmployeePage.jsx";
+import DepartmentDashboard from "./pages/department/DepartmentDashboard.jsx";
 
 const App = () => {
     const dispatch = useDispatch();
@@ -29,9 +31,10 @@ const App = () => {
                     <Route element={<Layout />}>
                         <Route path="/" element={<Home />} />
                         <Route path="/employees" element={<EmployeeDashboard />} />
+                        <Route path="/departments" element={<DepartmentDashboard />} />
                         <Route path="/employee/:id" element={<EmployeeProfile/>}/>
                         <Route path="/employee/addEmployee" element={<AddEmployee/>}/>
-                        {/*<Route path="/tickettracking" element={<Home />} />*/}
+                        <Route path="/employee/edit/:id" element={<EditEmployeePage/>} />
                     </Route>
                 </Route>
 

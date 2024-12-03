@@ -197,7 +197,7 @@ const TableComponent = ({ rows, columns, linkBasePath, itemName }) => {
 
                                     return (
                                         <TableRow key={uuidv4()} {...rowProps}>
-                                            <TableCell align="center">
+                                            <TableCell align="left">
                                                 {(page * rowsPerPage) + index + 1}
                                             </TableCell>
                                             {columns.map((column) => (

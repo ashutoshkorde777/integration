@@ -1,40 +1,45 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import { FiArrowLeftCircle, FiEdit } from "react-icons/fi";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { deleteEmployee } from "../../features/employeeSlice.js"; // Import deleteEmployee action
 import TableComponent from "../../components/Table/TableComponent.jsx";
 import AccessTableOutput from "./AccessTableOutput.jsx";
+import { MdAutoDelete } from "react-icons/md";
 import './EmployeeDashboard.css';
 
 function EmployeeProfile() {
     const { id } = useParams();
+    const dispatch = useDispatch(); // Use dispatch hook to dispatch actions
     const allEmployeesData = useSelector((state) => state.employee); // Fetch employees from Redux store
     const employeesData = allEmployeesData.employees;
 
     // Function to find an employee by customEmployeeId
     const findEmployeeById = (customEmployeeId) => {
-        for (let i = 0; i < employeesData.length; i++) {
-            if (employeesData[i].employee.customEmployeeId === customEmployeeId) {
-                return employeesData[i];
-            }
-        }
-        return null; // Return null if not found
+        return employeesData.find(employee => employee.employee.customEmployeeId === customEmployeeId);
     };
-
 
     // Check if employeesData is still loading
     if (!employeesData || employeesData.length === 0) {
         return <div>Loading...</div>;
     }
 
-    console.log('Emp data ala')
     const employee = findEmployeeById(id);
-    console.log(employee);
-    // Handle case when employee is not found
     if (!employee) {
         return <div>Employee not found.</div>;
     }
 
+    const navigate = useNavigate()
+
+    // Handle Delete Employee
+    const handleDelete = () => {
+        console.log("Are you sure you want to delete this employee?", employee.employee.employeeId)
+        const confirmDelete = window.confirm("Are you sure you want to delete this employee?");
+        if (confirmDelete) {
+            dispatch(deleteEmployee(employee.employee.employeeId)); // Dispatch delete action
+            navigate("/employees")
+        }
+    };
 
     const columns = [
         { id: 'projectName', label: 'Project Name', align: 'center' },
@@ -51,14 +56,11 @@ function EmployeeProfile() {
     ];
 
     const designationRows = employee.jobProfiles.map((jobProfile, index) => ({
-        id: index + 1, // Unique identifier for each row
+        id: index + 1,
         designation: jobProfile.designationName || 'N/A',
         department: jobProfile.departmentName || 'N/A',
         manager: jobProfile.managerName || 'N/A',
     }));
-
-
-    const rows = []; // Example: You can populate this dynamically if needed
 
     return (
         <div>
@@ -71,10 +73,20 @@ function EmployeeProfile() {
                             <span className="font-semibold">Employee Details</span>
                         </div>
                     </div>
-                    <button className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded">
-                        <FiEdit size={20} className="save-icon" />
-                        <span>Edit details</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded">
+                            <FiEdit size={20} className="save-icon" />
+                            <span>Edit details</span>
+                        </button>
+                        <button
+                            className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded"
+                            onClick={handleDelete} // Attach the delete handler
+                        >
+                            <MdAutoDelete size={20} className="delete-icon" />
+                            <span>Delete Employee</span>
+                        </button>
+                    </div>
                 </section>
 
                 <section className="add-employee-body bg-white px-10 py-7 rounded">
@@ -117,7 +129,7 @@ function EmployeeProfile() {
                     <h3 style={{ fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold" }}>
                         Projects
                     </h3>
-                    <TableComponent columns={columns} rows={rows} />
+                    <TableComponent columns={columns} rows={[]} />
                 </section>
             </div>
         </div>

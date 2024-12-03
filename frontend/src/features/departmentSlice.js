@@ -6,17 +6,18 @@ import axios from 'axios';
 export const fetchAllDepartments = createAsyncThunk(
     'department/fetchAllDepartments',
     async () => {
-        console.log('fetchAllDepartments called');
         const response = await axios.get('http://localhost:3000/api/v1/department/getAllDepartments');
-        return response.data.data; // assuming the API returns a `result` key
+        return response.data;
     }
 );
 
 export const fetchAllWorkingDepartments = createAsyncThunk(
     'department/fetchAllWorkingDepartments',
     async () => {
-        const response = await axios.get('/api/departments/getAllWorkingDepartments');
-        return response.data.result;
+        const response = await axios.get('http://localhost:3000/api/v1/department/getAllWorkingDepartments', {
+            withCredentials: true,
+        });
+        return response.data.data;
     }
 );
 

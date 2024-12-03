@@ -119,7 +119,7 @@ export const logoutEmployee = asyncHandler(async (req, res) => {
 
 export const deleteEmployee = asyncHandler(async (req, res) => {
     const { employeeId } = req.body;
-
+    console.log("called")
     if (!employeeId) {
         return res.status(400).json({ message: "Employee ID is required" });
     }
@@ -210,34 +210,37 @@ export const updateEmployee = asyncHandler(async (req, res) => {
 
 export const getAllEmployees = asyncHandler(async (req, res) => {
     const query = `
-        SELECT 
-            e.employeeId,
-            e.customEmployeeId, 
-            e.employeeName, 
-            e.companyName, 
-            e.employeeQualification, 
-            e.experienceInYears, 
-            e.employeeDOB, 
-            e.employeeJoinDate, 
-            e.employeeGender, 
-            e.employeePhone, 
-            e.employeeEmail, 
-            e.employeeAccess, 
-            e.employeeEndDate, 
-            d.departmentName, 
-            ds.designationName, 
-            m.employeeName AS managerName
-        FROM 
-            employee e
-        LEFT JOIN 
-            employeeDesignation ed ON e.employeeId = ed.employeeId
-        LEFT JOIN 
-            department d ON ed.departmentId = d.departmentId
-        LEFT JOIN 
-            designation ds ON ed.designationId = ds.designationId
-        LEFT JOIN 
-            employee m ON ed.managerId = m.employeeId;
-    `;
+    SELECT 
+        e.employeeId,
+        e.customEmployeeId, 
+        e.employeeName, 
+        e.companyName, 
+        e.employeeQualification, 
+        e.experienceInYears, 
+        e.employeeDOB, 
+        e.employeeJoinDate, 
+        e.employeeGender, 
+        e.employeePhone, 
+        e.employeeEmail, 
+        e.employeeAccess, 
+        e.employeeEndDate, 
+        d.departmentName, 
+        ds.designationName, 
+        m.employeeName AS managerName
+    FROM 
+        employee e
+    LEFT JOIN 
+        employeeDesignation ed ON e.employeeId = ed.employeeId
+    LEFT JOIN 
+        department d ON ed.departmentId = d.departmentId
+    LEFT JOIN 
+        designation ds ON ed.designationId = ds.designationId
+    LEFT JOIN 
+        employee m ON ed.managerId = m.employeeId
+    WHERE 
+        e.employeeEndDate IS NULL;
+`;
+
 
     connection.query(query, (err, results) => {
         if (err) {

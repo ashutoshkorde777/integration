@@ -23,22 +23,16 @@ const Sidebar = () => {
             icon: 'FiClipboard'
         },
         {
-            name: "Departments",
-            slug: "/departments",
-            active: true,
-            icon: 'FiBriefcase'
-        },
-        {
             name: "Employees",
             slug: "/employees",
             active: true,
             icon: 'FiUser'
         },
         {
-            name: "Ticket Tracking",
-            slug: "/tickettracking",
+            name: "Departments",
+            slug: "/departments",
             active: true,
-            icon: 'FiUser'
+            icon: 'FiBriefcase'
         },
     ];
 
