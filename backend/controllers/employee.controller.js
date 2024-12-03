@@ -209,14 +209,82 @@ export const updateEmployee = asyncHandler(async (req, res) => {
 });
 
 export const getAllEmployees = asyncHandler(async (req, res) => {
-    const token = req.cookies.accessToken;
-    if (!token) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
+    const query = `
+        SELECT 
+            e.employeeId,
+            e.customEmployeeId, 
+            e.employeeName, 
+            e.companyName, 
+            e.employeeQualification, 
+            e.experienceInYears, 
+            e.employeeDOB, 
+            e.employeeJoinDate, 
+            e.employeeGender, 
+            e.employeePhone, 
+            e.employeeEmail, 
+            e.employeeAccess, 
+            e.employeeEndDate, 
+            d.departmentName, 
+            ds.designationName, 
+            m.employeeName AS managerName
+        FROM 
+            employee e
+        LEFT JOIN 
+            employeeDesignation ed ON e.employeeId = ed.employeeId
+        LEFT JOIN 
+            department d ON ed.departmentId = d.departmentId
+        LEFT JOIN 
+            designation ds ON ed.designationId = ds.designationId
+        LEFT JOIN 
+            employee m ON ed.managerId = m.employeeId;
+    `;
 
-    const empQuery = `SELECT employeeId, customEmployeeId, employeeName, companyName, employeeQualification, experienceInYears, employeeDOB, employeeJoinDate, employeeGender, employeePhone, employeeEmail, employeeAccess, employeeRefreshToken, employeeEndDate FROM employee WHERE employeeEndDate IS NULL;`
+    connection.query(query, (err, results) => {
+        if (err) {
+            throw new Error("Error fetching employees: " + err.message);
+        }
 
-    const [employees] = await connection.promise().query(empQuery);
+        // Group the results
+        const employeesMap = {};
 
-    res.status(200).json(new ApiResponse(200, employees, 'All employees Fetched successfully.'));
-})
+        results.forEach((row) => {
+            const customEmployeeId = row.customEmployeeId;
+
+            if (!employeesMap[customEmployeeId]) {
+                // Initialize the employee object if not already present
+                employeesMap[customEmployeeId] = {
+                    employee: {
+                        employeeId: row.employeeId,
+                        customEmployeeId: row.customEmployeeId,
+                        employeeName: row.employeeName,
+                        companyName: row.companyName,
+                        employeeQualification: row.employeeQualification,
+                        experienceInYears: row.experienceInYears,
+                        employeeDOB: row.employeeDOB,
+                        employeeJoinDate: row.employeeJoinDate,
+                        employeeGender: row.employeeGender,
+                        employeePhone: row.employeePhone,
+                        employeeEmail: row.employeeEmail,
+                        employeeAccess: row.employeeAccess,
+                        employeeEndDate: row.employeeEndDate,
+                    },
+                    jobProfiles: [],
+                };
+            }
+
+            // Add the job profile to the employee's jobProfiles array
+            if (row.designationName || row.departmentName || row.managerName) {
+                employeesMap[customEmployeeId].jobProfiles.push({
+                    designationName: row.designationName,
+                    departmentName: row.departmentName,
+                    managerName: row.managerName,
+                });
+            }
+        });
+
+        // Convert the map to an array of grouped objects
+        const employees = Object.values(employeesMap);
+
+        res.status(200).json(employees);
+    });
+});

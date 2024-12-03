@@ -24,12 +24,12 @@ export const initializeAuth = createAsyncThunk('auth/initializeAuth', async (_, 
     } else {
         // If tokens are not available locally, validate from the backend
         try {
-            // const response = await axios.post(
-            //     'http://localhost:3000/api/v1/auth/validate', // Replace with your validation endpoint
-            //     {},
-            //     { withCredentials: true }
-            // );
-            // const { accessToken, refreshToken, accessString } = response.data;
+            const response = await axios.post(
+                'http://localhost:3000/api/v1/auth/validate', // Replace with your validation endpoint
+                {},
+                { withCredentials: true }
+            );
+            const { accessToken, refreshToken, accessString } = response.data;
 
             // Dispatch loginSuccess with new tokens
             dispatch(loginSuccess({ accessToken, refreshToken, accessString }));

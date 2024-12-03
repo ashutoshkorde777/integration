@@ -34,6 +34,12 @@ const Sidebar = () => {
             active: true,
             icon: 'FiUser'
         },
+        {
+            name: "Ticket Tracking",
+            slug: "/tickettracking",
+            active: true,
+            icon: 'FiUser'
+        },
     ];
 
     return (

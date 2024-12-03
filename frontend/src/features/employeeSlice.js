@@ -1,13 +1,13 @@
 // src/features/employeeSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import Cookies from "js-cookie";
 
 // Async Thunks for API calls
 export const getAllEmployees = createAsyncThunk('employees/getAllEmployees', async () => {
     const response = await axios.get('http://localhost:3000/api/v1/employee/getAllEmployees', {
         withCredentials: true,
     });
+    console.log(response.data);
     return response.data;
 });
 

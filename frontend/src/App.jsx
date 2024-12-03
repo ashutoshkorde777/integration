@@ -7,6 +7,8 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import Layout from './Layout.jsx';
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard.jsx";
+import EmployeeProfile from "./pages/employee/EmployeeProfile.jsx";
+import AddEmployee from "./pages/employee/AddEmployee.jsx";
 
 const App = () => {
     const dispatch = useDispatch();
@@ -27,6 +29,9 @@ const App = () => {
                     <Route element={<Layout />}>
                         <Route path="/" element={<Home />} />
                         <Route path="/employees" element={<EmployeeDashboard />} />
+                        <Route path="/employee/:id" element={<EmployeeProfile/>}/>
+                        <Route path="/employee/addEmployee" element={<AddEmployee/>}/>
+                        {/*<Route path="/tickettracking" element={<Home />} />*/}
                     </Route>
                 </Route>
 

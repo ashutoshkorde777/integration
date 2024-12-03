@@ -5,7 +5,7 @@ import Navbar from '../src/components/NavBar.jsx';
 import {useDispatch, useSelector} from 'react-redux';
 import Cookies from 'js-cookie';
 import {getCookie} from "./utils/cookie.js";
-// import './Layout.css'
+import './Layout.css'
 
 const Layout = () => {
     const { isLoggedIn } = useSelector((state) => state.auth);

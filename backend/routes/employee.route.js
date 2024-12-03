@@ -10,11 +10,11 @@ import {authMiddleware} from "../middleware/authMiddleware.js";
 
 const router = express.Router()
 
-router.post('/addEmployee',authMiddleware, addEmployee);
+router.post('/addEmployee', addEmployee);
 router.post('/loginEmployee', loginEmployee);
 router.post('/logoutEmployee', logoutEmployee);
-router.post('/deleteEmployee',authMiddleware, deleteEmployee);
-router.post('/updateEmployee',authMiddleware, updateEmployee);
+router.post('/deleteEmployee', deleteEmployee);
+router.post('/updateEmployee', updateEmployee);
 router.get('/getAllEmployees', getAllEmployees);
 
 export default router
