@@ -78,7 +78,6 @@ export const addEmployee = asyncHandler(async (req, res) => {
 
 export const loginEmployee = asyncHandler(async (req, res) => {
     const { employeeEmail, employeePassword } = req.body;
-
     connection.query('SELECT * FROM employee WHERE employeeEmail = ?', [employeeEmail], async (err, results) => {
         if (err || results.length === 0) {
             return res.status(401).json({ message: 'Invalid email or password' });
@@ -114,7 +113,7 @@ export const loginEmployee = asyncHandler(async (req, res) => {
 
 export const logoutEmployee = asyncHandler(async (req, res) => {
     res.clearCookie('accessToken', { path: '/', httpOnly: true, secure: true });
-    res.status(200).json({ message: 'Logged out successfully' });
+    res.status(200).json(new ApiResponse(200, {}, "Logged out successfully"));
 });
 
 export const deleteEmployee = asyncHandler(async (req, res) => {

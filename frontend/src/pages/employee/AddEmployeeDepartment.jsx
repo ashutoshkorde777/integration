@@ -3,7 +3,7 @@ import { FiPlusCircle } from 'react-icons/fi';
 import { MdOutlineDelete } from "react-icons/md";
 import { Autocomplete, TextField, FormControl } from '@mui/material';
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllDepartments } from "../../features/departmentSlice.js"; // Import the fetchAllDepartments action
+import {fetchAllDepartments, fetchAllWorkingDepartments} from "../../features/departmentSlice.js"; // Import the fetchAllDepartments action
 import { fetchDesignations } from "../../features/designationSlice.js"; // Import the fetchAllDesignations action
 import { getAllEmployees } from "../../features/employeeSlice.js"; // Import the fetchAllEmployees action
 
@@ -14,12 +14,12 @@ const AddEmployeeDepartment = ({ initialEmployeeDesignations, setEmployeeDesigna
 
     // Fetch data from Redux store
     const { employees } = useSelector((state) => state.employee);  // Replace with the correct slice for employees
-    const { departments, loading: departmentsLoading, error: departmentsError } = useSelector((state) => state.department);  // Replace with the correct slice for departments
+    const { workingDepartments } = useSelector((state) => state.department);  // Replace with the correct slice for departments
     const { designations, loading: designationsLoading, error: designationsError } = useSelector((state) => state.designation);  // Replace with the correct slice for designations
 
     // Dispatch actions on component mount
     useEffect(() => {
-        dispatch(fetchAllDepartments());
+        dispatch(fetchAllWorkingDepartments());
     }, [dispatch]);
 
     useEffect(() => {
@@ -31,21 +31,22 @@ const AddEmployeeDepartment = ({ initialEmployeeDesignations, setEmployeeDesigna
     }, [dispatch]);
 
     const empData = employees.map((employee) => ({
-        value: employee?.employee?.employeeId || '',  // Safe check for 'employeeId'
-        label: employee?.employee?.employeeName || '',  // Safe check for 'employeeName'
+        value: employee?.employee?.employeeId || '',
+        label: employee?.employee?.employeeName || '',
     }));
 
-    const deptData = departments.map((department) => ({
+    // console.log(workingDepartments)
+    const deptData = workingDepartments.map((department) => ({
         value: department.departmentId,
         label: department.departmentName,
-    }));
+    }
+    ));
 
     const desgData = designations.map((designation) => ({
         value: designation.designationId,
         label: designation.designationName
     }));
 
-    // Check if a designation is valid (from the desgData list)
     const isValidDesignation = (designationName) => {
         return desgData.some(desg => desg.label.toLowerCase() === designationName.toLowerCase());
     };

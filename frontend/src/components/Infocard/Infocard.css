@@ -9,8 +9,8 @@
 
 .infocard {
     width: 195px;
-    padding: 10px 15px 10px 15px;
-    border-radius: 10px;
+    padding: 6px 15px 6px 15px;
+    border-radius: 6px;
     display: flex;
     justify-content: space-between;
     color: #413B3B;

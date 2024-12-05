@@ -29,6 +29,7 @@ export const getAllWorkingDepartments = asyncHandler(async (req, res) => {
             const error = new ApiError(400, 'Error retrieving live/open departments.')
             return res.status(400).json(error.toJSON())
         }
+
         res
             .status(200)
             .json(new ApiResponse(200, data, 'All live/open departments retrieved successfully.'))

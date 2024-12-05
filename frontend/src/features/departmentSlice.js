@@ -17,6 +17,9 @@ export const fetchAllWorkingDepartments = createAsyncThunk(
         const response = await axios.get('http://localhost:3000/api/v1/department/getAllWorkingDepartments', {
             withCredentials: true,
         });
+
+        // console.log("Fetch All Working Departments");
+        // console.log(response.data)
         return response.data.data;
     }
 );

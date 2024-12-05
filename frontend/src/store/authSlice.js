@@ -1,43 +1,35 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Async Thunk to Logout
-export const logoutEmployee = createAsyncThunk('auth/logoutEmployee', async (_, { rejectWithValue }) => {
+// Async Thunk to Log out the User
+export const logoutEmployee = createAsyncThunk('auth/logoutEmployee', async (_, { dispatch, rejectWithValue }) => {
     try {
+        // Make a backend request to log out the user and destroy the session (or JWT)
         const response = await axios.post('http://localhost:3000/api/v1/employee/logoutEmployee', {}, { withCredentials: true });
-        return response.data; // Backend should return success message
+
+        // Once the backend confirms logout, return success
+        console.log(response);
+        return response.data;
     } catch (error) {
-        return rejectWithValue(error.response?.data || 'Logout failed');
+        return rejectWithValue('Logout failed');
     }
 });
 
-// Async Thunk to Initialize Authentication
-export const initializeAuth = createAsyncThunk('auth/initializeAuth', async (_, { dispatch, rejectWithValue }) => {
-    // Check tokens in localStorage
-    const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
-    const accessString = localStorage.getItem('accessString');
+// Async Thunk to Initialize Authentication (same as before)
+export const  initializeAuth = createAsyncThunk('auth/initializeAuth', async (_, { dispatch, rejectWithValue }) => {
+    try {
+        // Check tokens in cookies (access token should be sent via cookies)
+        const response = await axios.post(
+            'http://localhost:3000/api/v1/auth/validate',
+            {},
+            { withCredentials: true }
+        );
 
-    if (accessToken && refreshToken && accessString) {
-        // If tokens exist in localStorage, use them directly
+        // Destructure and get accessString, accessToken, refreshToken from response
+        const { accessString, accessToken, refreshToken } = response.data;
         dispatch(loginSuccess({ accessToken, refreshToken, accessString }));
-    } else {
-        // If tokens are not available locally, validate from the backend
-        try {
-            const response = await axios.post(
-                'http://localhost:3000/api/v1/auth/validate', // Replace with your validation endpoint
-                {},
-                { withCredentials: true }
-            );
-            const { accessToken, refreshToken, accessString } = response.data;
-
-            // Dispatch loginSuccess with new tokens
-            dispatch(loginSuccess({ accessToken, refreshToken, accessString }));
-        } catch (error) {
-            console.error('Initialization failed:', error);
-            dispatch(logout()); // Clear state and localStorage if validation fails
-            return rejectWithValue('Auto-login failed');
-        }
+    } catch (error) {
+        return rejectWithValue('Token validation failed');
     }
 });
 
@@ -62,9 +54,8 @@ const authSlice = createSlice({
             state.accessToken = accessToken;
             state.refreshToken = refreshToken;
             state.accessString = accessString;
-            state.status = 'succeeded';
 
-            // Store tokens in localStorage for persistence
+            // Store tokens and accessString in localStorage for persistence
             localStorage.setItem('accessToken', accessToken);
             localStorage.setItem('refreshToken', refreshToken);
             localStorage.setItem('accessString', accessString);
@@ -74,9 +65,8 @@ const authSlice = createSlice({
             state.accessToken = null;
             state.refreshToken = null;
             state.accessString = null;
-            state.status = 'idle';
 
-            // Remove tokens from localStorage on logout
+            // Clear tokens and accessString from localStorage
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('accessString');
@@ -84,9 +74,11 @@ const authSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            // When logoutEmployee is pending, update the state to loading
             .addCase(logoutEmployee.pending, (state) => {
                 state.status = 'loading';
             })
+            // When logoutEmployee is successful, clear the state and localStorage
             .addCase(logoutEmployee.fulfilled, (state) => {
                 state.status = 'idle';
                 state.isLoggedIn = false;
@@ -94,15 +86,17 @@ const authSlice = createSlice({
                 state.refreshToken = null;
                 state.accessString = null;
 
-                // Clear tokens from localStorage
+                // Clear tokens from localStorage on successful logout
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
                 localStorage.removeItem('accessString');
             })
+            // Handle errors in logout action
             .addCase(logoutEmployee.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || 'Logout failed';
             })
+            // Other reducers for initializeAuth as before
             .addCase(initializeAuth.pending, (state) => {
                 state.status = 'loading';
             })

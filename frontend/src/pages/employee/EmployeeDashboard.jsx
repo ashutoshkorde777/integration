@@ -28,7 +28,7 @@ const EmployeeList = () => {
 
 
     useEffect(() => {
-        console.log(employees)
+        // console.log(employees)
         if (employees) {
 
             const processedRows = employees.map((data, index) => {
@@ -47,12 +47,12 @@ const EmployeeList = () => {
                     empDept: departments || "N/A",
                 };
             });
-            console.log(processedRows)
+            // console.log(processedRows)
             setRows(processedRows);
         }
     }, [employees]);
 
-    console.log(rows)
+    // console.log(rows)
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
@@ -69,7 +69,7 @@ const EmployeeList = () => {
                     />
                 </div>
                 <button
-                    className="flex border-2 border-[#0061A1] rounded text-[#0061A1] font-semibold p-3"
+                    className="flex border-2 border-[#0061A1] rounded text-[#0061A1] font-semibold p-3 hover:cursor-pointer"
                     onClick={() => navigate('/employee/addEmployee')}>
                     <FiPlusCircle style={{ marginRight: '10px', width: '25px', height: '25px' }} />
                     Add employee

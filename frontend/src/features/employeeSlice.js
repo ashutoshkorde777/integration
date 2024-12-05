@@ -7,7 +7,7 @@ export const getAllEmployees = createAsyncThunk('employees/getAllEmployees', asy
     const response = await axios.get('http://localhost:3000/api/v1/employee/getAllEmployees', {
         withCredentials: true,
     });
-    console.log(response.data);
+    // console.log(response.data);
     return response.data;
 });
 
@@ -40,7 +40,7 @@ export const deleteEmployee = createAsyncThunk('employees/deleteEmployee', async
         const response = await axios.post('http://localhost:3000/api/v1/employee/deleteEmployee', { employeeId });
 
         // Log the response from the server (optional)
-        console.log(response);
+        // console.log(response);
 
         // Return employeeId for removing it from the state
         return employeeId;
