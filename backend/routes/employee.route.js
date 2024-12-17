@@ -12,7 +12,7 @@ const router = express.Router()
 
 router.post('/addEmployee', addEmployee);
 router.post('/loginEmployee', loginEmployee);
-router.post('/logoutEmployee', logoutEmployee);
+router.post('/logoutEmployee',authMiddleware, logoutEmployee);
 router.post('/deleteEmployee', deleteEmployee);
 router.post('/updateEmployee', updateEmployee);
 router.get('/getAllEmployees', getAllEmployees);

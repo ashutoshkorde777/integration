@@ -5,6 +5,130 @@ import ApiResponse from "../utils/ApiResponse.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../utils/tokens.js";
 
+const generateAccessAndRefreshToken = async (employeeId) => {
+    try {
+        const [employeeRows] = await connection.promise().query(
+            "SELECT * FROM employee WHERE employeeId = ?",
+            [employeeId]
+        );
+
+        if (employeeRows.length === 0) {
+            throw new ApiError(404, "Employee not found");
+        }
+
+        const user = employeeRows[0];
+
+        const accessToken = await generateAccessToken(user);
+        const refreshToken = await generateRefreshToken(user);
+
+        return { accessToken, refreshToken };
+    } catch (error) {
+        console.error("Error in generateAccessAndRefreshToken:", error.message);
+        throw new ApiError(500, "Something went wrong while creating tokens.");
+    }
+};
+
+export const loginEmployee = asyncHandler(async (req, res) => {
+    const { employeeEmail, employeePassword } = req.body;
+
+    // Find employee by email
+    connection.query(
+        "SELECT * FROM employee WHERE employeeEmail = ?",
+        [employeeEmail],
+        async (err, results) => {
+            if (err || results.length === 0) {
+                return res.status(401).json({ message: "Invalid email or password" });
+            }
+
+            const employee = results[0];
+
+            // Check if the password matches
+            const isPasswordValid = await bcrypt.compare(employeePassword, employee.employeePassword);
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: "Invalid email or password" });
+            }
+
+            // Generate access and refresh tokens
+            const { accessToken, refreshToken } = await generateAccessAndRefreshToken(employee.employeeId);
+
+            // Update refresh token in the database
+            try {
+                await connection.promise().query(
+                    "UPDATE employee SET employeeRefreshToken = ? WHERE employeeId = ?",
+                    [refreshToken, employee.employeeId]
+                );
+            } catch (error) {
+                console.error("Error updating refresh token:", error.message);
+                return res.status(500).json(
+                    new ApiResponse(500, {}, "Error while updating refresh token")
+                );
+            }
+
+            // Fetch employee details without sensitive information
+            const [employeeData] = await connection.promise().query(
+                `SELECT employeeId, customEmployeeId, employeeName, companyName, employeeQualification,
+                    employeeDOB, employeeJoinDate, experienceInYears, employeeGender, employeePhone,
+                    employeeEmail, employeeAccess, employeeEndDate
+                 FROM employee WHERE employeeId = ?`,
+                [employee.employeeId]
+            );
+
+            if (employeeData.length === 0) {
+                return res
+                    .status(404)
+                    .json({ message: "Employee not found after login." });
+            }
+
+            const employeeDetails = employeeData[0];
+
+            // Set accessToken as an HTTP-only cookie
+            const cookieOptions = {
+                httpOnly: true,
+                secure: true
+            };
+
+            // Respond with employee details, accessToken, and refreshToken
+            return res
+                .status(200)
+                .cookie("accessToken", accessToken, cookieOptions)
+                .cookie("refreshToken", refreshToken, cookieOptions)
+                .json(
+                    new ApiResponse(200, {
+                        user: employeeDetails,
+                        accessToken,
+                        refreshToken,
+                    })
+                );
+        }
+    );
+});
+
+export const logoutEmployee = asyncHandler(async (req, res) => {
+    try {
+
+        // Remove the refreshToken from the database for the logged-in user
+        await connection.promise().query(
+            'UPDATE employee SET employeeRefreshToken = NULL WHERE employeeId = ?',
+            [req.body.employeeId]
+        );
+
+        // Clear the cookies for accessToken and refreshToken
+        const options = {
+            httpOnly: true,
+            secure: true
+        };
+
+        return res
+            .status(200)
+            .clearCookie("accessToken", options)
+            .clearCookie("refreshToken", options)
+            .json({ status: 200, message: "User logged out" });
+    } catch (error) {
+        console.error("Error logging out user:", error.message);
+        return res.status(500).json({ status: 500, message: "Error logging out user" });
+    }
+});
+
 export const addEmployee = asyncHandler(async (req, res) => {
     const employee = req.body;
 
@@ -20,15 +144,15 @@ export const addEmployee = asyncHandler(async (req, res) => {
     const hashedPassword = await bcrypt.hash(employee.employee.employeePassword, 10);
 
     // Generate refresh token for the employee
-    const employeeRefreshToken = generateRefreshToken({ employeeId: employee.employee.customEmployeeId });
+    // const employeeRefreshToken = generateRefreshToken({ employeeId: employee.employee.customEmployeeId });
 
     // Insert the employee into the employee table
     const insertEmployeeQuery = `
         INSERT INTO employee 
         (customEmployeeId, employeeName, companyName, employeeQualification, experienceInYears, 
          employeeDOB, employeeJoinDate, employeeGender, employeePhone, employeeEmail, 
-         employeePassword, employeeAccess, employeeRefreshToken) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         employeePassword, employeeAccess) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const employeeData = [
@@ -44,7 +168,6 @@ export const addEmployee = asyncHandler(async (req, res) => {
         employee.employee.employeeEmail,
         hashedPassword, // Use hashed password here
         employee.employee.employeeAccess,
-        employeeRefreshToken // Add the generated refresh token here
     ];
 
     const [result] = await connection.promise().query(insertEmployeeQuery, employeeData);
@@ -74,46 +197,6 @@ export const addEmployee = asyncHandler(async (req, res) => {
     }
 
     res.status(201).json(new ApiResponse(201, result.insertId, "Employee and job profiles added successfully."));
-});
-
-export const loginEmployee = asyncHandler(async (req, res) => {
-    const { employeeEmail, employeePassword } = req.body;
-    connection.query('SELECT * FROM employee WHERE employeeEmail = ?', [employeeEmail], async (err, results) => {
-        if (err || results.length === 0) {
-            return res.status(401).json({ message: 'Invalid email or password' });
-        }
-
-        const employee = results[0];
-
-        // Check if the password matches
-        const isPasswordValid = await bcrypt.compare(employeePassword, employee.employeePassword);
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid email or password' });
-        }
-
-        // Generate tokens
-        const user = { employeeId: employee.employeeId, employeeEmail };
-        const accessToken = generateAccessToken(user);
-        const refreshToken = employee.employeeRefreshToken; // Assuming refresh token is already stored in DB
-
-        // Set accessToken as an HTTP-only cookie
-        res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // Set secure to true in production
-            maxAge: 30 * 60 * 1000, // 30 minutes
-            path: '/'
-        });
-
-        const [employeeAccess] = await connection.promise().query(`SELECT employeeAccess FROM employee WHERE employeeId = ${employee.employeeId}`);
-        const accessString = employeeAccess[0].employeeAccess;
-
-        res.json({ refreshToken, accessToken, accessString });
-    });
-});
-
-export const logoutEmployee = asyncHandler(async (req, res) => {
-    res.clearCookie('accessToken', { path: '/', httpOnly: true, secure: true });
-    res.status(200).json(new ApiResponse(200, {}, "Logged out successfully"));
 });
 
 export const deleteEmployee = asyncHandler(async (req, res) => {

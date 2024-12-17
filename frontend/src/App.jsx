@@ -1,6 +1,5 @@
-import React, {useEffect} from 'react';
-import {useDispatch, useSelector} from 'react-redux';
-import {initializeAuth} from './store/authSlice'; // Adjust the path
+import React from 'react';
+import { useSelector } from 'react-redux';
 import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom';
 import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
@@ -12,14 +11,12 @@ import AddEmployee from "./pages/employee/AddEmployee.jsx";
 import EditEmployeePage from "./pages/employee/EditEmployeePage.jsx";
 import DepartmentDashboard from "./pages/department/DepartmentDashboard.jsx";
 import {Bounce, ToastContainer} from "react-toastify";
+import AddDepartment from "./pages/department/AddDepartment.jsx";
+import DepartmentProfile from "./pages/department/DepartmentProfile.jsx";
+import Profile from "./pages/Profile.jsx";
 
 const App = () => {
-    const dispatch = useDispatch();
-    const {isLoggedIn} = useSelector((state) => state.auth);
-
-    useEffect(() => {
-        dispatch(initializeAuth());
-    }, [dispatch]);
+    const {isAuthenticated} = useSelector((state) => state.auth);
 
     return (
         <>
@@ -38,23 +35,83 @@ const App = () => {
             />
             <Router>
                 <Routes>
-                    {/* Public Route */}
-                    <Route path="/login" element={isLoggedIn ? <Navigate to="/"/> : <Login/>}/>
+                    <Route path="/login" element={isAuthenticated ? <Navigate to="/"/> : <Login/>}/>
 
-                    {/* Private Routes */}
-                    <Route element={<PrivateRoute/>}>
-                        <Route element={<Layout/>}>
-                            <Route path="/" element={<Home/>}/>
-                            <Route path="/employees" element={<EmployeeDashboard/>}/>
-                            <Route path="/departments" element={<DepartmentDashboard/>}/>
-                            <Route path="/employee/:id" element={<EmployeeProfile/>}/>
-                            <Route path="/employee/addEmployee" element={<AddEmployee/>}/>
-                            <Route path="/employee/edit/:id" element={<EditEmployeePage/>}/>
-                        </Route>
+                    <Route element={<Layout/>}>
+                        <Route
+                            path="/"
+                            element={
+                                <PrivateRoute>
+                                    <Home/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/employees"
+                            element={
+                                <PrivateRoute>
+                                    <EmployeeDashboard/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/departments"
+                            element={
+                                <PrivateRoute>
+                                    <DepartmentDashboard/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/department/addDepartment"
+                            element={
+                                <PrivateRoute>
+                                    <AddDepartment/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/department/:id"
+                            element={
+                                <PrivateRoute>
+                                    <DepartmentProfile/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/employee/:id"
+                            element={
+                                <PrivateRoute>
+                                    <EmployeeProfile/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/employee/addEmployee"
+                            element={
+                                <PrivateRoute>
+                                    <AddEmployee/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/employee/edit/:id"
+                            element={
+                                <PrivateRoute>
+                                    <EditEmployeePage/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/profile"
+                            element={
+                                <PrivateRoute>
+                                    <Profile/>
+                                </PrivateRoute>
+                            }
+                        />
                     </Route>
-
-                    {/* Fallback for undefined routes */}
-                    <Route path="*" element={<Navigate to={isLoggedIn ? "/" : "/login"}/>}/>
+                    <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"}/>}/>
                 </Routes>
             </Router>
         </>

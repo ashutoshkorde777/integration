@@ -75,7 +75,7 @@ const AddEmployee = () => {
         dispatch(addEmployee(payload))
             .then(() => {
                 notify()
-                // navigate("/employees");
+                navigate("/employees");
             })
             .catch(() => {
                 toast.error("Failed to add employee.");

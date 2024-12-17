@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import {logout, logoutEmployee} from '../store/authSlice.js';
+import {logout} from '../features/authSlice.js';
 import { useNavigate } from 'react-router-dom';
 import Cookies from "js-cookie";
 import axios from "axios";
@@ -13,14 +13,7 @@ const LogoutButton = () => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        dispatch(logoutEmployee())
-            .unwrap()
-            .then(() => {
-                console.log('Logout successful');
-            })
-            .catch((error) => {
-                console.error('Logout failed:', error);
-            });
+        dispatch(logout());
     };
 
 

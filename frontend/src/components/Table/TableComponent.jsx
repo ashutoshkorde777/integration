@@ -114,7 +114,7 @@ const TableComponent = ({ rows, columns, linkBasePath, itemName }) => {
             <div className={`flex items-center justify-between`}>
                 <Searchbar
                     items={rows}
-                    itemKey="empId" // Assuming each employee has an empId as a unique key
+                    itemKey="de" // Assuming each employee has an empId as a unique key
                     itemLabel={itemName} // Name to search by
                     navigateTo={linkBasePath}
                 />

@@ -22,6 +22,7 @@ const EmployeeList = () => {
     ];
 
     useEffect(() => {
+        console.log("Getting Employee Details")
         dispatch(getAllEmployees());
     }, [dispatch]);
 

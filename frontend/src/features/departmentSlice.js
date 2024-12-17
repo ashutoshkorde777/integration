@@ -1,159 +1,130 @@
-// src/store/departmentSlice.js
+// departmentSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Thunks (async actions)
+const BASE_URL = 'http://localhost:3000/api/v1/department';
+
+// Thunks
 export const fetchAllDepartments = createAsyncThunk(
     'department/fetchAllDepartments',
-    async () => {
-        const response = await axios.get('http://localhost:3000/api/v1/department/getAllDepartments');
-        return response.data;
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(`${BASE_URL}/getAllDepartments`);
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || 'Failed to fetch departments');
+        }
     }
 );
 
 export const fetchAllWorkingDepartments = createAsyncThunk(
     'department/fetchAllWorkingDepartments',
-    async () => {
-        const response = await axios.get('http://localhost:3000/api/v1/department/getAllWorkingDepartments', {
-            withCredentials: true,
-        });
-
-        // console.log("Fetch All Working Departments");
-        // console.log(response.data)
-        return response.data.data;
+    async (_, { rejectWithValue }) => {
+        try {
+            console.log("Redux getAllWorkingDepartments")
+            const response = await axios.get(`${BASE_URL}/getAllWorkingDepartments`);
+            console.log(response.data);
+            return response.data.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || 'Failed to fetch working departments');
+        }
     }
 );
 
 export const fetchAllClosedDepartments = createAsyncThunk(
     'department/fetchAllClosedDepartments',
-    async () => {
-        const response = await axios.get('/api/departments/getClosedDepartments');
-        return response.data.result;
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(`${BASE_URL}/getClosedDepartments`);
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || 'Failed to fetch closed departments');
+        }
     }
 );
 
 export const addDepartment = createAsyncThunk(
     'department/addDepartment',
-    async (departmentData) => {
-        const response = await axios.post('/api/departments/addDepartment', departmentData);
-        return response.data.result;
+    async (departmentData, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(`${BASE_URL}/addDepartment`, departmentData);
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || 'Failed to add department');
+        }
     }
 );
 
 export const deleteDepartment = createAsyncThunk(
     'department/deleteDepartment',
-    async (departmentId) => {
-        const response = await axios.post('/api/departments/deleteDepartment', { id: departmentId });
-        return departmentId; // we return the departmentId to remove it from the state
+    async (departmentId, { rejectWithValue }) => {
+        try {
+            const response = await axios.delete(`${BASE_URL}/deleteDepartment/${departmentId}`);
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || 'Failed to delete department');
+        }
     }
 );
 
 export const updateDepartment = createAsyncThunk(
     'department/updateDepartment',
-    async (departmentData) => {
-        const response = await axios.put('/api/departments/updateDepartment', departmentData);
-        return response.data.result;
+    async ({ departmentId, departmentData }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(`${BASE_URL}/updateDepartment/${departmentId}`, departmentData);
+            return response.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || 'Failed to update department');
+        }
     }
 );
 
-// Initial State
-const initialState = {
-    departments: [],
-    workingDepartments: [],
-    closedDepartments: [],
-    loading: false,
-    error: null,
-};
-
-// Redux Slice
+// Slice
 const departmentSlice = createSlice({
     name: 'department',
-    initialState,
-    reducers: {},
+    initialState: {
+        departments: {
+            all: [],
+            working: [],
+            closed: [],
+        },
+        loading: false,
+        error: null,
+    },
     extraReducers: (builder) => {
-        // Handle fetch all departments
-        builder.addCase(fetchAllDepartments.pending, (state) => {
-            state.loading = true;
-        });
-        builder.addCase(fetchAllDepartments.fulfilled, (state, action) => {
-            state.loading = false;
-            state.departments = action.payload;
-        });
-        builder.addCase(fetchAllDepartments.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.error.message;
-        });
-
-        // Handle fetch all working departments
-        builder.addCase(fetchAllWorkingDepartments.pending, (state) => {
-            state.loading = true;
-        });
-        builder.addCase(fetchAllWorkingDepartments.fulfilled, (state, action) => {
-            state.loading = false;
-            state.workingDepartments = action.payload;
-        });
-        builder.addCase(fetchAllWorkingDepartments.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.error.message;
-        });
-
-        // Handle fetch all closed departments
-        builder.addCase(fetchAllClosedDepartments.pending, (state) => {
-            state.loading = true;
-        });
-        builder.addCase(fetchAllClosedDepartments.fulfilled, (state, action) => {
-            state.loading = false;
-            state.closedDepartments = action.payload;
-        });
-        builder.addCase(fetchAllClosedDepartments.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.error.message;
-        });
-
-        // Handle add department
-        builder.addCase(addDepartment.pending, (state) => {
-            state.loading = true;
-        });
-        builder.addCase(addDepartment.fulfilled, (state, action) => {
-            state.loading = false;
-            state.departments.push(action.payload);
-        });
-        builder.addCase(addDepartment.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.error.message;
-        });
-
-        // Handle delete department
-        builder.addCase(deleteDepartment.pending, (state) => {
-            state.loading = true;
-        });
-        builder.addCase(deleteDepartment.fulfilled, (state, action) => {
-            state.loading = false;
-            state.departments = state.departments.filter(
-                (department) => department.id !== action.payload
-            );
-        });
-        builder.addCase(deleteDepartment.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.error.message;
-        });
-
-        // Handle update department
-        builder.addCase(updateDepartment.pending, (state) => {
-            state.loading = true;
-        });
-        builder.addCase(updateDepartment.fulfilled, (state, action) => {
-            state.loading = false;
-            state.departments = state.departments.map((department) =>
-                department.id === action.payload.id ? action.payload : department
-            );
-        });
-        builder.addCase(updateDepartment.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.error.message;
-        });
+        builder
+            .addCase(fetchAllDepartments.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchAllDepartments.fulfilled, (state, action) => {
+                state.loading = false;
+                state.departments.all = action.payload;
+            })
+            .addCase(fetchAllDepartments.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(fetchAllWorkingDepartments.fulfilled, (state, action) => {
+                state.departments.working = action.payload;
+            })
+            .addCase(fetchAllClosedDepartments.fulfilled, (state, action) => {
+                state.departments.closed = action.payload;
+            })
+            .addCase(addDepartment.fulfilled, (state, action) => {
+                state.departments.all.push(action.payload);
+            })
+            .addCase(deleteDepartment.fulfilled, (state, action) => {
+                state.departments.all = state.departments.all.filter(
+                    (department) => department.departmentId !== action.meta.arg
+                );
+            })
+            .addCase(updateDepartment.fulfilled, (state, action) => {
+                const index = state.departments.all.findIndex(
+                    (department) => department.departmentId === action.payload.departmentId
+                );
+                if (index !== -1) state.departments.all[index] = action.payload;
+            });
     },
 });
 
-// Export actions and reducer
 export default departmentSlice.reducer;

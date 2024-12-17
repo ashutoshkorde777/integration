@@ -14,7 +14,7 @@ const AddEmployeeDepartment = ({ initialEmployeeDesignations, setEmployeeDesigna
 
     // Fetch data from Redux store
     const { employees } = useSelector((state) => state.employee);  // Replace with the correct slice for employees
-    const { workingDepartments } = useSelector((state) => state.department);  // Replace with the correct slice for departments
+    const { departments } = useSelector((state) => state.department);  // Replace with the correct slice for departments
     const { designations, loading: designationsLoading, error: designationsError } = useSelector((state) => state.designation);  // Replace with the correct slice for designations
 
     // Dispatch actions on component mount
@@ -35,8 +35,8 @@ const AddEmployeeDepartment = ({ initialEmployeeDesignations, setEmployeeDesigna
         label: employee?.employee?.employeeName || '',
     }));
 
-    // console.log(workingDepartments)
-    const deptData = workingDepartments.map((department) => ({
+    console.log(departments)
+    const deptData = departments.working.map((department) => ({
         value: department.departmentId,
         label: department.departmentName,
     }

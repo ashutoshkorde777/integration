@@ -8,13 +8,13 @@ import {getCookie} from "./utils/cookie.js";
 import './Layout.css'
 
 const Layout = () => {
-    const { isLoggedIn } = useSelector((state) => state.auth);
+    const { isAuthenticated } = useSelector((state) => state.auth);
 
     return (
         <div className="layout-container">
-            {isLoggedIn && <Sidebar />}
+            {isAuthenticated && <Sidebar />}
             <div className="main-content">
-                {isLoggedIn && <Navbar />}
+                {isAuthenticated && <Navbar />}
                 <div className="content-area bg-green-600">
                     <Outlet />
                 </div>

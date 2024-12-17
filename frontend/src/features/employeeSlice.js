@@ -7,7 +7,7 @@ export const getAllEmployees = createAsyncThunk('employees/getAllEmployees', asy
     const response = await axios.get('http://localhost:3000/api/v1/employee/getAllEmployees', {
         withCredentials: true,
     });
-    // console.log(response.data);
+    console.log(response.data);
     return response.data;
 });
 

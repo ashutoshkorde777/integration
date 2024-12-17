@@ -1,9 +1,8 @@
 import './DepartmentDashboard.css';
 import Infocard from '../../components/Infocard/Infocard.jsx';
-import Searchbar from './Searchbox/Searchbar.jsx';
 import TableComponent from '../../components/Table/TableComponent.jsx';
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { fetchAllWorkingDepartments } from "../../features/departmentSlice.js";
 import { FiPlusCircle, FiBriefcase } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -18,35 +17,36 @@ const DepartmentDashboard = () => {
     }, [dispatch]);
 
     // Access working departments from Redux state
-    const { workingDepartments } = useSelector(state => state.department);
-    console.log(workingDepartments);
+    const { departments } = useSelector(state => state.department);
 
     // Populate rows from working departments
-    const rows = workingDepartments.map((department) => ({
-        id: department.departmentId,
-        deptName: department.departmentName, // Adjust keys based on your API response
+    const rows = departments.working.map((department) => ({
+        deptId: department.departmentId,
+        deptName: department.departmentName,
+        deptStartDate: new Date(department.departmentStartDate).toLocaleDateString(), // This excludes the time
     }));
 
     const columns = [
+        { id: 'deptId', label: 'Department ID', align: 'left' },
         { id: 'deptName', label: 'Department Name', align: 'left' },
+        { id: 'deptStartDate', label: 'Start Date', align: 'left' },
     ];
 
     return (
         <div className='dashboard'>
-            <div className='infocard-container-parent'>
-                <div className='infocard-container'>
+            <div className='flex justify-between items-end mb-5'>
+                <div className='infocard-container h-max'>
                     <Infocard
                         icon={`<FiBriefcase />`}
                         number={rows.length}
                         text={'All Departments'}
                         className={'selected'}
-                        width={225}
                     />
                 </div>
                 <button
-                    className="add-btn"
+                    className="flex border-2 border-[#0061A1] rounded text-[#0061A1] font-semibold p-3 hover:cursor-pointer"
                     onClick={() => navigate('/department/addDepartment')}>
-                    <FiPlusCircle style={{ marginRight: "10px", width: "25px", height: "25px" }} />
+                    <FiPlusCircle style={{marginRight: '10px', width: '25px', height: '25px'}}/>
                     Add department
                 </button>
             </div>
@@ -54,7 +54,7 @@ const DepartmentDashboard = () => {
             {/* <Searchbar lst={rows} /> */}
 
             {/* Table Component */}
-            <TableComponent rows={rows} columns={columns} linkBasePath={`/department`} />
+            <TableComponent rows={rows} columns={columns} linkBasePath={`/department`}/>
         </div>
     );
 };

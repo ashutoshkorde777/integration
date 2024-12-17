@@ -1,23 +1,15 @@
-import React, { useEffect } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { initializeAuth} from '../store/authSlice.js'; // Import the initializeAuth action
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
-const PrivateRoute = () => {
-    const dispatch = useDispatch();
-    const { isLoggedIn, status } = useSelector((state) => state.auth);
+const ProtectedRoute = ({ children }) => {
+    const { isAuthenticated } = useSelector((state) => state.auth);
 
-    useEffect(() => {
-        if (!isLoggedIn) {
-            dispatch(initializeAuth());
-        }
-    }, [dispatch, isLoggedIn]);
-
-    if (status === 'loading') {
-        return <div>Loading...</div>;
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
     }
 
-    return isLoggedIn ? <Outlet /> : <Navigate to="/login" />
+    return children;
 };
 
-export default PrivateRoute;
+export default ProtectedRoute;
