@@ -7,6 +7,7 @@ import TableComponent from "../../components/Table/TableComponent.jsx";
 import AccessTableOutput from "./AccessTableOutput.jsx";
 import { MdAutoDelete } from "react-icons/md";
 import './EmployeeDashboard.css';
+import {Bounce, toast} from "react-toastify";
 
 function EmployeeProfile() {
     const { id } = useParams();
@@ -39,7 +40,20 @@ function EmployeeProfile() {
             dispatch(deleteEmployee(employee.employee.employeeId)); // Dispatch delete action
             navigate("/employees")
         }
+        notify()
     };
+
+    const notify = () => toast.success('Employee Deleted Successfully!', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+    });
 
     const columns = [
         { id: 'projectName', label: 'Project Name', align: 'center' },

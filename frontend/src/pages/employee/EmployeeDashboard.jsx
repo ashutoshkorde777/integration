@@ -1,24 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { getAllEmployees } from '../../features/employeeSlice.js';
-import { FiUser, FiPlusCircle } from 'react-icons/fi';
+import React, {useEffect, useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {useNavigate} from 'react-router-dom';
+import {getAllEmployees} from '../../features/employeeSlice.js';
+import {FiPlusCircle} from 'react-icons/fi';
 import Infocard from "../../components/Infocard/Infocard.jsx";
-import Searchbar from "./Searchbox/Searchbar.jsx";
 import TableComponent from "../../components/Table/TableComponent.jsx";
 
 const EmployeeList = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { employees, loading, error } = useSelector((state) => state.employee);
+    const {employees, loading, error} = useSelector((state) => state.employee);
 
     const [rows, setRows] = useState([]);
     const columns = [
-        { id: 'empId', label: 'Employee ID', align: 'left' },
-        { id: 'empName', label: 'Name', align: 'left' },
-        { id: 'empEmail', label: 'Email ID', align: 'left' },
-        { id: 'empJobTitle', label: 'Role', align: 'left' },
-        { id: 'empDept', label: 'Department', align: 'left' },
+        {id: 'empId', label: 'Employee ID', align: 'left'},
+        {id: 'empName', label: 'Name', align: 'left'},
+        {id: 'empEmail', label: 'Email ID', align: 'left'},
+        {id: 'empJobTitle', label: 'Role', align: 'left'},
+        {id: 'empDept', label: 'Department', align: 'left'},
     ];
 
     useEffect(() => {
@@ -27,13 +26,12 @@ const EmployeeList = () => {
     }, [dispatch]);
 
 
-
     useEffect(() => {
         // console.log(employees)
         if (employees) {
 
             const processedRows = employees.map((data, index) => {
-                const { employee, jobProfiles } = data;
+                const {employee, jobProfiles} = data;
 
                 // Extract and join job profile details
                 const roles = jobProfiles.map((profile) => profile.designationName || "N/A").join(", ");
@@ -46,6 +44,7 @@ const EmployeeList = () => {
                     empEmail: employee.employeeEmail,
                     empJobTitle: roles || "N/A",
                     empDept: departments || "N/A",
+                    createdAt: employee.createdAt,
                 };
             });
             // console.log(processedRows)
@@ -60,7 +59,7 @@ const EmployeeList = () => {
 
     return (
         <div className='dashboard'>
-            <div className='flex justify-between items-end mb-5'>
+            <div className='flex justify-between items-end mb-3'>
                 <div className='infocard-container h-max'>
                     <Infocard
                         icon={`<FiUser />`}
@@ -72,7 +71,7 @@ const EmployeeList = () => {
                 <button
                     className="flex border-2 border-[#0061A1] rounded text-[#0061A1] font-semibold p-3 hover:cursor-pointer"
                     onClick={() => navigate('/employee/addEmployee')}>
-                    <FiPlusCircle style={{ marginRight: '10px', width: '25px', height: '25px' }} />
+                    <FiPlusCircle style={{marginRight: '10px', width: '25px', height: '25px'}}/>
                     Add employee
                 </button>
             </div>
@@ -87,7 +86,16 @@ const EmployeeList = () => {
                     {/*/>*/}
                 </div>
 
-                <TableComponent rows={rows} columns={columns} linkBasePath="/employee" itemKey={rows.empId} itemName={rows.empName}/>
+                <TableComponent
+                    rows={rows}
+                    columns={columns}
+                    linkBasePath="/employee"
+                    defaultSortOrder={"oldest"}
+                    itemKey="empId"
+                    itemLabel="empName"
+                    navigateTo="/employee"
+                    searchLabel="Search by Employee Name"
+                />
             </div>
         </div>
     );

@@ -46,7 +46,7 @@ const NavBar = () => {
                 <div className="navDiv">
                     {isAuthenticated ? (
                         <div className="user-icon-container" ref={avatarRef}>
-                            <FiUser className="user-icon" color="white" size={18}/>
+                            <FiUser className="user-icon" color="white" size={18} onClick={toggleDropdown}/>
                             {/*<img*/}
                             {/*    src={logo || "https://via.placeholder.com/45"}*/}
                             {/*    alt="User Avatar"*/}
