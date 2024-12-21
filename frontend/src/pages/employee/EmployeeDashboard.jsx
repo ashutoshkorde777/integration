@@ -21,7 +21,7 @@ const EmployeeList = () => {
     ];
 
     useEffect(() => {
-        console.log("Getting Employee Details")
+        // console.log("Getting Employee Details")
         dispatch(getAllEmployees());
     }, [dispatch]);
 
@@ -39,12 +39,12 @@ const EmployeeList = () => {
 
                 return {
                     id: index + 1, // Row ID
-                    empId: employee.customEmployeeId,
-                    empName: employee.employeeName,
-                    empEmail: employee.employeeEmail,
+                    empId: employee?.customEmployeeId,
+                    empName: employee?.employeeName,
+                    empEmail: employee?.employeeEmail,
                     empJobTitle: roles || "N/A",
                     empDept: departments || "N/A",
-                    createdAt: employee.createdAt,
+                    createdAt: employee?.createdAt,
                 };
             });
             // console.log(processedRows)

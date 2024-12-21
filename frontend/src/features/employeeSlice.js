@@ -12,8 +12,10 @@ export const getAllEmployees = createAsyncThunk('employees/getAllEmployees', asy
 });
 
 export const addEmployee = createAsyncThunk('employees/addEmployee', async (employeeData) => {
+    console.log(employeeData);
     const response = await axios.post('http://localhost:3000/api/v1/employee/addEmployee', employeeData);
-    return response.data; // Assuming the added employee data is returned
+    console.log(response.data);
+    return response.data.data; // Extracting the `data` object from the response
 });
 
 export const updateEmployee = createAsyncThunk(
@@ -23,33 +25,26 @@ export const updateEmployee = createAsyncThunk(
         const data = {
             employeeId,
             updates,
-            jobProfiles
+            jobProfiles,
         };
 
         const response = await axios.put(
             `http://localhost:3000/api/v1/employee/updateEmployee/${employeeId}`,
             data
         );
-        return response.data; // Assuming the updated employee data is returned
+        return response.data;
     }
 );
-
 
 export const deleteEmployee = createAsyncThunk('employees/deleteEmployee', async (employeeId) => {
     try {
         const response = await axios.post('http://localhost:3000/api/v1/employee/deleteEmployee', { employeeId });
-
-        // Log the response from the server (optional)
-        // console.log(response);
-
-        // Return employeeId for removing it from the state
-        return employeeId;
+        return employeeId; // Return employeeId for removing it from the state
     } catch (error) {
-        console.error("Error deleting employee:", error);
-        throw new Error(error.response?.data?.message || "An error occurred while deleting the employee.");
+        console.error('Error deleting employee:', error);
+        throw new Error(error.response?.data?.message || 'An error occurred while deleting the employee.');
     }
 });
-
 
 // Initial State
 const initialState = {
@@ -77,18 +72,27 @@ const employeeSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
+
             // Add Employee
             .addCase(addEmployee.pending, (state) => {
                 state.loading = true;
             })
             .addCase(addEmployee.fulfilled, (state, action) => {
                 state.loading = false;
-                state.employees.push(action.payload); // Add the new employee to the state
+
+                const { employee, jobProfiles } = action.payload; // Extract employee and job profile details
+                console.log(employee, jobProfiles);
+                // Add the new employee along with its job profiles to the state
+                state.employees.push({
+                    ...employee, // Add all employee details
+                    jobProfiles, // Include job profiles
+                });
             })
             .addCase(addEmployee.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
+
             // Update Employee
             .addCase(updateEmployee.pending, (state) => {
                 state.status = 'loading';
@@ -101,13 +105,18 @@ const employeeSlice = createSlice({
                 state.status = 'failed';
                 state.error = action.error.message;
             })
+
             // Delete Employee
             .addCase(deleteEmployee.pending, (state) => {
                 state.loading = true;
             })
             .addCase(deleteEmployee.fulfilled, (state, action) => {
                 state.loading = false;
-                state.employees = state.employees.filter(employee => employee.employeeId !== action.payload); // Remove employee by ID
+
+                // Remove the deleted employee by filtering the state
+                state.employees = state.employees.filter(
+                    (employee) => employee.employeeId !== action.payload
+                );
             })
             .addCase(deleteEmployee.rejected, (state, action) => {
                 state.loading = false;

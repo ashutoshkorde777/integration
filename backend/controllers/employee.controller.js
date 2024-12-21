@@ -137,14 +137,15 @@ export const addEmployee = asyncHandler(async (req, res) => {
     const [checkingCustomIdResult] = await connection.promise().query(checkForCustomIdQuery, [employee.employee.customEmployeeId]);
 
     if (checkingCustomIdResult.length > 0) {
-        return res.status(400).json(new ApiError(400, 'CustomEmployeeID should be unique', ['CustomEmployeeID should be unique']));
+        return res
+            .status(400)
+            .json(
+                new ApiError(400, 'CustomEmployeeID should be unique', ['CustomEmployeeID should be unique'])
+            );
     }
 
     // Hash the password asynchronously
     const hashedPassword = await bcrypt.hash(employee.employee.employeePassword, 10);
-
-    // Generate refresh token for the employee
-    // const employeeRefreshToken = generateRefreshToken({ employeeId: employee.employee.customEmployeeId });
 
     // Insert the employee into the employee table
     const insertEmployeeQuery = `
@@ -174,17 +175,20 @@ export const addEmployee = asyncHandler(async (req, res) => {
     const employeeId = result.insertId;
 
     // Insert job profiles into employeedesignation table
+    const jobProfiles = [];
     for (const profile of employee.jobProfiles) {
         let { designationId, designationName, departmentId, managerId } = profile;
 
         if (!departmentId) {
-            return res.status(400).json({ message: "Department ID is required." });
+            return res.status(400).json({ message: 'Department ID is required.' });
         }
 
         // Insert designation if designationId is 0
         if (designationId === 0) {
             const insertQuery = `INSERT INTO designation (designationName) VALUES (?);`;
-            const [designationInsertResult] = await connection.promise().query(insertQuery, [designationName]);
+            const [designationInsertResult] = await connection
+                .promise()
+                .query(insertQuery, [designationName]);
             designationId = designationInsertResult.insertId;
         }
 
@@ -193,10 +197,36 @@ export const addEmployee = asyncHandler(async (req, res) => {
             INSERT INTO employeedesignation (employeeId, designationId, departmentId, managerId) 
             VALUES (?, ?, ?, ?)
         `;
-        await connection.promise().query(insertJobProfileQuery, [employeeId, designationId, departmentId, managerId]);
+        await connection.promise().query(insertJobProfileQuery, [
+            employeeId,
+            designationId,
+            departmentId,
+            managerId,
+        ]);
+
+        jobProfiles.push({
+            designationId,
+            designationName,
+            departmentId,
+            managerId,
+        });
     }
 
-    res.status(201).json(new ApiResponse(201, result.insertId, "Employee and job profiles added successfully."));
+    // Fetch the newly inserted employee data
+    const fetchEmployeeQuery = `
+        SELECT * FROM employee WHERE employeeId = ?
+    `;
+    const [employeeResult] = await connection.promise().query(fetchEmployeeQuery, [employeeId]);
+
+    const newEmployeeDetails = employeeResult[0];
+
+    // Respond with the full employee details, including job profiles
+    res.status(201).json(
+        new ApiResponse(201, {
+            employee: newEmployeeDetails,
+            jobProfiles,
+        }, 'Employee and job profiles added successfully.')
+    );
 });
 
 export const deleteEmployee = asyncHandler(async (req, res) => {
@@ -373,7 +403,7 @@ export const getAllEmployees = asyncHandler(async (req, res) => {
 
         // Convert the map to an array of grouped objects
         const employees = Object.values(employeesMap);
-        console.log(employees)
+        // console.log(employees)
 
         res.status(200).json(employees);
     });

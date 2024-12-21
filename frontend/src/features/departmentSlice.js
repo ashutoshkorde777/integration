@@ -47,6 +47,7 @@ export const addDepartment = createAsyncThunk(
     'department/addDepartment',
     async (departmentData, { rejectWithValue }) => {
         try {
+            console.log(departmentData);
             const response = await axios.post(`${BASE_URL}/addDepartment`, departmentData);
             return response.data;
         } catch (err) {

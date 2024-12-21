@@ -8,7 +8,7 @@ function Searchbar({ items, itemKey, itemLabel, searchLabel, navigateTo }) {
     const [input, setInput] = useState(''); // Tracks input value
     const [filteredSuggestions, setFilteredSuggestions] = useState([]); // Tracks filtered search suggestions
 
-    console.log(items)
+    // console.log(items)
 
     const navigate = useNavigate();
 

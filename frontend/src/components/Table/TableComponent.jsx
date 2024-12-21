@@ -216,26 +216,23 @@ const TableComponent = ({ rows, columns, linkBasePath, defaultSortOrder = 'newes
                             {sortedRows
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((row, index) => {
-                                    const RowComponent = linkBasePath ? Link : 'tr';
-                                    const rowProps = linkBasePath
-                                        ? {
-                                            component: RowComponent,
-                                            to: `${linkBasePath}/${row.empId || row.deptId || row.projectId}`,
-                                            sx: {
-                                                cursor: 'pointer',
-                                                textDecoration: 'none',
-                                            },
-                                        }
-                                        : { component: 'tr' };
-
                                     return (
-                                        <TableRow key={uuidv4()} {...rowProps}>
+                                        <TableRow key={uuidv4()} hover>
                                             <TableCell align="left">
                                                 {page * rowsPerPage + index + 1}
                                             </TableCell>
                                             {columns.map((column) => (
                                                 <TableCell key={column.id} align={column.align}>
-                                                    {row[column.id]}
+                                                    {linkBasePath ? (
+                                                        <Link
+                                                            to={`${linkBasePath}/${row.empId || row.deptId || row.projectId}`}
+                                                            style={{ textDecoration: 'none', color: 'inherit' }}
+                                                        >
+                                                            {row[column.id]}
+                                                        </Link>
+                                                    ) : (
+                                                        row[column.id]
+                                                    )}
                                                 </TableCell>
                                             ))}
                                         </TableRow>

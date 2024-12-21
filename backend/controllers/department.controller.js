@@ -52,10 +52,7 @@ export const getClosedDepartments = asyncHandler(async (req, res) => {
 
 // Create a new department
 export const addDepartment = asyncHandler(async (req, res) => {
-    // Extract values from request body
     const { departmentName, departmentStartDate, departmentEndDate } = req.body;
-
-    // console.log("line 58 done");
 
     // Validate the department name
     const nameValidationError = nameValidate(departmentName);
@@ -63,15 +60,11 @@ export const addDepartment = asyncHandler(async (req, res) => {
         return res.status(400).json(new ApiError(400, nameValidationError, [nameValidationError]));
     }
 
-    // console.log("line 64 done");
-
     // Validate the start date
     const startDateValidationError = dateValidate(departmentStartDate);
     if (startDateValidationError) {
         return res.status(400).json(new ApiError(400, startDateValidationError, [startDateValidationError]));
     }
-
-    // console.log("line 72 done");
 
     // Ensure the start date is before the end date
     const startDate = new Date(departmentStartDate);
