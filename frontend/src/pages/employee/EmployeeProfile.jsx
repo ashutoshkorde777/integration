@@ -12,8 +12,10 @@ import {Bounce, toast} from "react-toastify";
 function EmployeeProfile() {
     const { id } = useParams();
     const dispatch = useDispatch(); // Use dispatch hook to dispatch actions
-    const allEmployeesData = useSelector((state) => state.employee); // Fetch employees from Redux store
+    const allEmployeesData = useSelector((state) => state?.employee); // Fetch employees from Redux store
     const employeesData = allEmployeesData.employees;
+
+    console.log(allEmployeesData)
 
     // Function to find an employee by customEmployeeId
     const findEmployeeById = (customEmployeeId) => {
@@ -95,7 +97,7 @@ function EmployeeProfile() {
                         </button>
                         <button
                             className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded"
-                            onClick={handleDelete} // Attach the delete handler
+                            onClick={handleDelete}
                         >
                             <MdAutoDelete size={20} className="delete-icon" />
                             <span>Delete Employee</span>
@@ -136,14 +138,14 @@ function EmployeeProfile() {
                     <h3 style={{ fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold" }}>
                         Designations
                     </h3>
-                    <TableComponent columns={designationColumns} rows={designationRows} />
+                    <TableComponent columns={designationColumns} rows={designationRows} searchLabel={'Search by designation name'} />
                 </section>
 
                 <section className="add-employee-body bg-white px-10 py-10 rounded">
                     <h3 style={{ fontSize: "18px", marginBottom: "10px", color: "#7D7D7D", fontWeight: "bold" }}>
                         Projects
                     </h3>
-                    <TableComponent columns={columns} rows={[]} />
+                    <TableComponent columns={columns} rows={[]} searchLabel={'Search by project name'}/>
                 </section>
             </div>
         </div>

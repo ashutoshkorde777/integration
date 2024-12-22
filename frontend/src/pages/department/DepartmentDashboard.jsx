@@ -6,6 +6,7 @@ import React, { useEffect } from "react";
 import { fetchAllWorkingDepartments } from "../../features/departmentSlice.js";
 import { FiPlusCircle, FiBriefcase } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import {getAllEmployees} from "../../features/employeeSlice.js";
 
 const DepartmentDashboard = () => {
     const dispatch = useDispatch();
@@ -13,6 +14,7 @@ const DepartmentDashboard = () => {
 
     // Fetch working departments on component mount
     useEffect(() => {
+        dispatch(getAllEmployees());
         dispatch(fetchAllWorkingDepartments());
     }, [dispatch]);
 
@@ -27,7 +29,6 @@ const DepartmentDashboard = () => {
     }));
 
     const columns = [
-        { id: 'deptId', label: 'Department ID', align: 'left' },
         { id: 'deptName', label: 'Department Name', align: 'left' },
         { id: 'deptStartDate', label: 'Start Date', align: 'left' },
     ];
@@ -54,7 +55,7 @@ const DepartmentDashboard = () => {
             {/* <Searchbar lst={rows} /> */}
 
             {/* Table Component */}
-            <TableComponent rows={rows} columns={columns} linkBasePath={`/department`}/>
+            <TableComponent rows={rows} columns={columns} linkBasePath={`/department`} itemLabel={'Department'} searchLabel={'Search by department name'} defaultSortOrder={'oldest'}/>
         </div>
     );
 };

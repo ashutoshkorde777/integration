@@ -14,6 +14,10 @@ import {Bounce, ToastContainer} from "react-toastify";
 import AddDepartment from "./pages/department/AddDepartment.jsx";
 import DepartmentProfile from "./pages/department/DepartmentProfile.jsx";
 import Profile from "./pages/Profile.jsx";
+import Modal from "react-modal";
+
+Modal.setAppElement('#root');
+
 
 const App = () => {
     const {isAuthenticated} = useSelector((state) => state.auth);
@@ -99,6 +103,30 @@ const App = () => {
                             element={
                                 <PrivateRoute>
                                     <EditEmployeePage/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/designations"
+                            element={
+                                <PrivateRoute>
+                                    <Profile/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/training"
+                            element={
+                                <PrivateRoute>
+                                    <Profile/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/tickettracking"
+                            element={
+                                <PrivateRoute>
+                                    <Profile/>
                                 </PrivateRoute>
                             }
                         />

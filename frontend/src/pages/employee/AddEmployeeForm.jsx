@@ -91,7 +91,7 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues, handleFo
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
                             label="Employee DOB"
-                            format={"YYYY/MM/DD"}
+                            format={"DD/MM/YYYY"}
                             onChange={(date) => handleDateChange(date, 'employeeDOB')}
                             value={employeeInputValues.employeeDOB ? dayjs(employeeInputValues.employeeDOB) : null}
                             textField={(params) => <TextField {...params} />}
@@ -224,7 +224,7 @@ const AddEmployeeForm = ({ employeeInputValues, setEmployeeInputValues, handleFo
                     {/* Joining Date */}
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            format={"YYYY/MM/DD"}
+                            format={"DD/MM/YYYY"}
                             label="Joining date"
                             name={'employeeJoinDate'}
                             onChange={(date) => handleDateChange(date, 'employeeJoinDate')}

@@ -4,7 +4,7 @@ import {
     getAllDepartments,
     getAllWorkingDepartments,
     getClosedDepartments,
-    addDepartment, deleteDepartment, updateDepartment
+    addDepartment, deleteDepartment, updateDepartment, moveEmployee
 } from "../controllers/department.controller.js";
 
 const router = express.Router()

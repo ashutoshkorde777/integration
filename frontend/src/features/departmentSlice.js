@@ -21,9 +21,9 @@ export const fetchAllWorkingDepartments = createAsyncThunk(
     'department/fetchAllWorkingDepartments',
     async (_, { rejectWithValue }) => {
         try {
-            console.log("Redux getAllWorkingDepartments")
+            // console.log("Redux getAllWorkingDepartments")
             const response = await axios.get(`${BASE_URL}/getAllWorkingDepartments`);
-            console.log(response.data);
+            // console.log(response.data);
             return response.data.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || 'Failed to fetch working departments');
@@ -59,8 +59,9 @@ export const addDepartment = createAsyncThunk(
 export const deleteDepartment = createAsyncThunk(
     'department/deleteDepartment',
     async (departmentId, { rejectWithValue }) => {
+        console.log("Redux deleteDepartment", departmentId);
         try {
-            const response = await axios.delete(`${BASE_URL}/deleteDepartment/${departmentId}`);
+            const response = await axios.post(`${BASE_URL}/deleteDepartment/`, {deptId: departmentId});
             return response.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || 'Failed to delete department');

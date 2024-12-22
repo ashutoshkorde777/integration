@@ -68,9 +68,9 @@ export const addDepartment = asyncHandler(async (req, res) => {
 
     // Ensure the start date is before the end date
     const startDate = new Date(departmentStartDate);
-    const endDate = new Date(departmentEndDate);
+    const endDate = departmentEndDate ? new Date(departmentEndDate) : null;
 
-    if (startDate >= endDate) {
+    if (endDate !== null && startDate >= endDate) {
         return res.status(400).json(new ApiError(400, 'Start date should be before the end date.', ['Start date should be before the end date.']));
     }
 
@@ -82,7 +82,7 @@ export const addDepartment = asyncHandler(async (req, res) => {
     const values = [
         departmentName,
         departmentStartDate,
-        departmentEndDate,
+        endDate,
     ];
 
     connection.query(query, values, (err, result) => {
@@ -96,7 +96,6 @@ export const addDepartment = asyncHandler(async (req, res) => {
             .json(new ApiResponse(201, { departmentId: result.insertId, ...req.body }, 'Department created successfully.'));
     });
 });
-
 
 // Delete a department - just putting today's date (date as closing) in end date field - no removal of data is taken place
 export const deleteDepartment = asyncHandler(async (req, res) => {
@@ -180,4 +179,104 @@ export const updateDepartment = asyncHandler(async (req, res) => {
             res.status(200).json(new ApiResponse(200, req.body, 'Department updated successfully.'));
         });
     });
+});
+
+export const moveEmployee = asyncHandler(async (req, res) => {
+    const { employeeIds, toDepartmentId } = req.body;
+
+    // Validate the request payload
+    if (!employeeIds || !Array.isArray(employeeIds) || employeeIds.length === 0) {
+        return res
+            .status(400)
+            .json(new ApiError(400, "Invalid or missing employee IDs", ["employeeIds must be provided as a non-empty array"]));
+    }
+
+    if (!toDepartmentId) {
+        return res
+            .status(400)
+            .json(new ApiError(400, "Target department ID is required"));
+    }
+
+    try {
+        // Step 1: Validate that the target department exists and is active
+        const [departmentRows] = await connection.promise().query(
+            "SELECT * FROM department WHERE departmentId = ? AND departmentEndDate IS NULL",
+            [toDepartmentId]
+        );
+
+        if (departmentRows.length === 0) {
+            return res
+                .status(404)
+                .json(new ApiError(404, "Target department does not exist or is inactive"));
+        }
+
+        // Step 2: Validate that all provided employees exist
+        const [existingEmployees] = await connection.promise().query(
+            "SELECT employeeId FROM employee WHERE employeeId IN (?)",
+            [employeeIds]
+        );
+
+        const validEmployeeIds = existingEmployees.map((e) => e.employeeId);
+        const invalidEmployeeIds = employeeIds.filter((id) => !validEmployeeIds.includes(id));
+
+        if (invalidEmployeeIds.length > 0) {
+            return res
+                .status(400)
+                .json(new ApiError(400, "Invalid employee IDs", [`Invalid IDs: ${invalidEmployeeIds.join(", ")}`]));
+        }
+
+        // Step 3: Update the departmentId for the valid employees in employeedesignation
+        const [updateResult] = await connection.promise().query(
+            `
+            UPDATE employeedesignation
+            SET departmentId = ?
+            WHERE employeeId IN (?)
+            `,
+            [toDepartmentId, validEmployeeIds]
+        );
+
+        // Check if any rows were updated
+        if (updateResult.affectedRows === 0) {
+            return res
+                .status(404)
+                .json(new ApiError(404, "No employees were updated. Please verify the records."));
+        }
+
+        // Step 4: Respond with success
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { updatedEmployees: validEmployeeIds },
+                    "Employees successfully moved to the new department"
+                )
+            );
+    } catch (error) {
+        console.error("Error in moveEmployee function:", error.message);
+        return res
+            .status(500)
+            .json(new ApiError(500, "An error occurred while moving employees"));
+    }
+});
+
+export const deleteMultipleEmployees = asyncHandler(async (req, res) => {
+    const { employeeIds } = req.body; // Receive an array of employee IDs
+
+    if (!Array.isArray(employeeIds) || employeeIds.length === 0) {
+        return res.status(400).json({ message: "No employees provided for deletion" });
+    }
+
+    try {
+        // Use SQL IN clause to delete multiple employees
+        await connection.promise().query(
+            'DELETE FROM employee WHERE employeeId IN (?)',
+            [employeeIds]
+        );
+
+        res.status(200).json({ message: "Employees deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting employees:", error.message);
+        throw new ApiError(500, "An error occurred while deleting employees.");
+    }
 });

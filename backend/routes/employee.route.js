@@ -7,6 +7,7 @@ import {
     updateEmployee
 } from "../controllers/employee.controller.js";
 import {authMiddleware} from "../middleware/authMiddleware.js";
+import {deleteMultipleEmployees, moveEmployee} from "../controllers/department.controller.js";
 
 const router = express.Router()
 
@@ -16,5 +17,7 @@ router.post('/logoutEmployee',authMiddleware, logoutEmployee);
 router.post('/deleteEmployee', deleteEmployee);
 router.post('/updateEmployee', updateEmployee);
 router.get('/getAllEmployees', getAllEmployees);
+router.post('/moveEmployee', moveEmployee);
+router.post('/deleteMultipleEmployees', deleteMultipleEmployees);
 
 export default router

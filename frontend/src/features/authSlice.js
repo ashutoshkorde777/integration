@@ -24,6 +24,8 @@ export const login = createAsyncThunk('auth/login', async ({ email, password }, 
             const response = await axios.post(`${API_BASE_URL}/employee/loginEmployee`, {
                 employeeEmail: email,
                 employeePassword: password,
+            }, {
+                withCredentials: true,
             });
             console.log(response.data);
             return response.data.data; // API's `data` field contains user details

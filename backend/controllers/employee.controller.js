@@ -84,9 +84,11 @@ export const loginEmployee = asyncHandler(async (req, res) => {
             // Set accessToken as an HTTP-only cookie
             const cookieOptions = {
                 httpOnly: true,
-                secure: true
+                secure: true,
+                sameSite: "None",
             };
 
+            console.log(accessToken, refreshToken)
             // Respond with employee details, accessToken, and refreshToken
             return res
                 .status(200)
@@ -408,3 +410,4 @@ export const getAllEmployees = asyncHandler(async (req, res) => {
         res.status(200).json(employees);
     });
 });
+
