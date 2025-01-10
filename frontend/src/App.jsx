@@ -8,7 +8,7 @@ import Layout from './Layout.jsx';
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard.jsx";
 import EmployeeProfile from "./pages/employee/EmployeeProfile.jsx";
 import AddEmployee from "./pages/employee/AddEmployee.jsx";
-import EditEmployeePage from "./pages/employee/EditEmployeePage.jsx";
+import EditEmployeePage from "./pages/employee/EditEmployee.jsx";
 import DepartmentDashboard from "./pages/department/DepartmentDashboard.jsx";
 import {Bounce, ToastContainer} from "react-toastify";
 import AddDepartment from "./pages/department/AddDepartment.jsx";

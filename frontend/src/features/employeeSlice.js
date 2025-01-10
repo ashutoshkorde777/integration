@@ -73,13 +73,13 @@ export const moveEmployee = createAsyncThunk(
 
 export const deleteMultipleEmployees = createAsyncThunk(
     'employees/deleteMultipleEmployees',
-    async (employeeIds, { rejectWithValue }) => {
+    async (employeeIds, { dispatch, rejectWithValue }) => {
         try {
             const response = await axios.post(
-                'http://localhost:3000/api/v1/employee/deleteMultipleEmployees',
-                { employeeIds }
+                'http://localhost:3000/api/v1/employee/deleteMultipleEmployees', employeeIds
             );
-            return employeeIds; // Return the array of deleted employee IDs
+
+            await dispatch(getAllEmployees());
         } catch (error) {
             console.error('Error deleting employees:', error);
             return rejectWithValue(
@@ -127,8 +127,8 @@ const employeeSlice = createSlice({
                 console.log(employee, jobProfiles);
                 // Add the new employee along with its job profiles to the state
                 state.employees.push({
-                    ...employee, // Add all employee details
-                    jobProfiles, // Include job profiles
+                    ...employee,
+                    jobProfiles,
                 });
             })
             .addCase(addEmployee.rejected, (state, action) => {
@@ -142,7 +142,7 @@ const employeeSlice = createSlice({
             })
             .addCase(updateEmployee.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.employeeDetails = action.payload; // Updated employee data
+                state.employeeDetails = action.payload;
             })
             .addCase(updateEmployee.rejected, (state, action) => {
                 state.status = 'failed';
@@ -165,16 +165,6 @@ const employeeSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(deleteMultipleEmployees.fulfilled, (state, action) => {
-                state.employees = state.employees.filter(
-                    (employee) => !action.payload.includes(employee.employeeId)
-                );
-                state.loading = false;
-            })
-            .addCase(deleteMultipleEmployees.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            });
     },
 });
 

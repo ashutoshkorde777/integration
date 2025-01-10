@@ -9,7 +9,7 @@ import {deleteDepartment} from "../../features/departmentSlice.js";
 import {notify} from "../../components/Toast/SuccessNotify.js";
 import moment from "moment";
 import Modal from 'react-modal';
-import {getAllEmployees, moveEmployee} from "../../features/employeeSlice.js";
+import {deleteMultipleEmployees, moveEmployee} from "../../features/employeeSlice.js";
 
 function DepartmentProfile() {
     const {id} = useParams();
@@ -21,8 +21,9 @@ function DepartmentProfile() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedEmployees, setSelectedEmployees] = useState([]);
     const [showSecondModal, setShowSecondModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showDeleteEmployeeModal, setShowDeleteEmployeeModal] = useState(false);
     const [selectedDepartment, setSelectedDepartment] = useState(null);
+    const [showDeleteDepartmentModal, setShowDeleteDepartmentModal] = useState(false);
 
     if (!workingDepartments || workingDepartments.length === 0) {
         return <div>Loading...</div>;
@@ -49,7 +50,9 @@ function DepartmentProfile() {
         )
     );
 
-    const openModal = () => setIsModalOpen(true);
+    const openModal = () => {
+        filteredEmployees.length === 0 ? setShowDeleteDepartmentModal(true) : setIsModalOpen(true);
+    }
 
     const closeModal = () => {
         setIsModalOpen(false);
@@ -92,19 +95,25 @@ function DepartmentProfile() {
         }
 
         closeModal()
-        setShowDeleteModal(true)
+        setShowDeleteEmployeeModal(true)
     }
 
-    function confirmDelete () {
+    function confirmDepartmentDelete() {
+        console.log("Deleting Department:", department);
+        handleDelete()
+    }
+
+    function confirmEmployeeDelete() {
         console.log("Deleting Employees:", selectedEmployees);
 
-        // TODO: Implement the logic for dispatching the move operation
+        // TODO: Implement the logic for dispatching the delete operation
         // dispatch(moveEmployee({employeeIds: selectedEmployees, toDepartmentId: selectedDepartment}))
+        dispatch(deleteMultipleEmployees({employeeIds: selectedEmployees}))
 
         // Reset states and close modal
         setSelectedEmployees([]);
         setSelectedDepartment(null);
-        setShowDeleteModal(false);
+        setShowDeleteEmployeeModal(false);
         notify("Employees have been deleted successfully!"); // Notify success
     }
 
@@ -112,10 +121,16 @@ function DepartmentProfile() {
     const handleDelete = () => {
         const confirmDelete = window.confirm("Are you sure you want to delete this department?");
         if (confirmDelete) {
+            if (filteredEmployees.length > 0) {
+                alert("Please move or delete employees to another department first!");
+                return false;
+            }
             dispatch(deleteDepartment(department.departmentId)); // Dispatch delete action
             navigate("/departments");
             notify("Department deleted successfully!");
+            return true;
         }
+        return false;
     };
 
     // Handle department selection
@@ -140,21 +155,16 @@ function DepartmentProfile() {
             return;
         }
 
-        console.log("Moving employees", selectedEmployees, "to department", selectedDepartment);
-
-        // TODO: Implement the logic for dispatching the move operation
         dispatch(moveEmployee({employeeIds: selectedEmployees, toDepartmentId: selectedDepartment}))
-
-        // Reset states and close modal
         setSelectedEmployees([]);
         setSelectedDepartment(null);
         setShowSecondModal(false);
-        notify("Employees have been moved successfully!"); // Notify success
-        handleDelete()
+        notify("Employees have been moved successfully!");
+
     };
 
     const processedRows = filteredEmployees.map((data, index) => {
-        const { employee, jobProfiles } = data;
+        const {employee, jobProfiles} = data;
 
         // Extract and join department-related roles only
         const roles = jobProfiles
@@ -192,20 +202,6 @@ function DepartmentProfile() {
         {id: 'duration', label: 'Duration', align: 'center'},
     ]
 
-    //
-    // const designationColumns = [
-    //     { id: 'designation', label: 'Designation', align: 'left' },
-    //     { id: 'department', label: 'Department', align: 'left' },
-    //     { id: 'manager', label: 'Reporting Authority', align: 'left' },
-    // ];
-    //
-    // const designationRows = employee.jobProfiles.map((jobProfile, index) => ({
-    //     id: index + 1,
-    //     designation: jobProfile.designationName || 'N/A',
-    //     department: jobProfile.departmentName || 'N/A',
-    //     manager: jobProfile.managerName || 'N/A',
-    // }));
-    //
     return (
         <div>
             <div className="add-employee-dashboard">
@@ -307,7 +303,8 @@ function DepartmentProfile() {
                             </div>
 
                             <div className="flex justify-end gap-4 mt-6">
-                                <button onClick={() => confirmMove()} className="bg-green-500 text-white px-4 py-2 rounded">
+                                <button onClick={() => confirmMove()}
+                                        className="bg-green-500 text-white px-4 py-2 rounded">
                                     Confirm Move
                                 </button>
                                 <button
@@ -321,8 +318,8 @@ function DepartmentProfile() {
 
                         {/* Third Modal - Delete Employee Yes/No */}
                         <Modal
-                            isOpen={showDeleteModal}
-                            onRequestClose={() => setShowDeleteModal(false)}
+                            isOpen={showDeleteEmployeeModal}
+                            onRequestClose={() => setShowDeleteEmployeeModal(false)}
                             contentLabel="Are you sure you want to delete this employees?"
                             className="relative bg-white rounded-lg p-6 w-full max-w-md mx-auto"
                             overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
@@ -330,11 +327,36 @@ function DepartmentProfile() {
                             <h2 className="font-normal mb-4">Are you sure you want to delete this employees?</h2>
 
                             <div className="flex justify-end gap-4 mt-6">
-                                <button onClick={() => confirmDelete()} className="bg-green-500 text-white px-4 py-2 rounded">
+                                <button onClick={() => confirmEmployeeDelete()}
+                                        className="bg-green-500 text-white px-4 py-2 rounded">
                                     Confirm Delete
                                 </button>
                                 <button
-                                    onClick={() => setShowDeleteModal(false)}
+                                    onClick={() => setShowDeleteEmployeeModal(false)}
+                                    className="bg-red-500 text-white px-4 py-2 rounded"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </Modal>
+
+                        {/* Fourth Modal - Delete Department Yes/No */}
+                        <Modal
+                            isOpen={showDeleteDepartmentModal}
+                            onRequestClose={() => setShowDeleteEmployeeModal(false)}
+                            contentLabel="Are you sure you want to delete this department?"
+                            className="relative bg-white rounded-lg p-6 w-full max-w-md mx-auto"
+                            overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+                        >
+                            <h2 className="font-normal mb-4">Are you sure you want to delete this department?</h2>
+
+                            <div className="flex justify-end gap-4 mt-6">
+                                <button onClick={() => confirmDepartmentDelete()}
+                                        className="bg-green-500 text-white px-4 py-2 rounded">
+                                    Confirm Delete
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteDepartmentModal(false)}
                                     className="bg-red-500 text-white px-4 py-2 rounded"
                                 >
                                     Cancel

@@ -45,6 +45,10 @@ function EmployeeProfile() {
         notify()
     };
 
+    const handleEdit = () => {
+        navigate(`/employee/edit/${id}`);
+    }
+
     const notify = () => toast.success('Employee Deleted Successfully!', {
         position: "top-right",
         autoClose: 5000,
@@ -91,6 +95,7 @@ function EmployeeProfile() {
                     </div>
                     <div className="flex items-center gap-3">
                         <button
+                            onClick={handleEdit}
                             className="flex justify-center items-center gap-3 bg-[#0061A1] text-white py-1.5 px-2 rounded">
                             <FiEdit size={20} className="save-icon" />
                             <span>Edit details</span>
