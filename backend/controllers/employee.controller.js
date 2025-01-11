@@ -184,9 +184,22 @@ export const loginEmployee = asyncHandler(async (req, res) => {
                     e.employeeEmail, 
                     e.employeeAccess, 
                     e.createdAt,
-                    e.employeeEndDate
+                    e.employeeEndDate, 
+                    d.departmentId,
+                    d.departmentName,
+                    ds.designationId,
+                    ds.designationName,
+                    m.employeeName AS managerName
                 FROM 
                     employee e
+                LEFT JOIN 
+                    employeeDesignation ed ON e.employeeId = ed.employeeId
+                LEFT JOIN 
+                    department d ON ed.departmentId = d.departmentId
+                LEFT JOIN 
+                    designation ds ON ed.designationId = ds.designationId
+                LEFT JOIN 
+                    employee m ON ed.managerId = m.employeeId
                 WHERE 
                     e.employeeId = ?;`,
                 [employee.employeeId]
@@ -203,7 +216,9 @@ export const loginEmployee = asyncHandler(async (req, res) => {
             // Fetch job profiles (department, designation, manager)
             const [jobProfiles] = await connection.promise().query(
                 `SELECT 
+                    ds.designationId, 
                     ds.designationName, 
+                    d.departmentId,
                     d.departmentName, 
                     m.employeeName AS managerName
                 FROM 

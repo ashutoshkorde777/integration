@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 const Profile = () => {
     // Getting user data from Redux state
     const user = useSelector((state) => state.auth.user);
+    const jobProfiles = useSelector((state) => state.auth.jobProfiles);
     const navigate = useNavigate();
     return (
         <div className="profile-container px-24 py-8">
@@ -33,7 +34,7 @@ const Profile = () => {
             <div className="user-details mt-8 space-y-4">
                 <div>
                     <strong>Id (Only for developers use):</strong> <span>{user?.employeeId}</span>
-                {/* or if you want to fetch only id use this line
+                    {/* or if you want to fetch only id use this line
                 const employeeId = useSelector((state) => state.auth.user?.employeeId);
                 */}
                 </div>
@@ -43,6 +44,19 @@ const Profile = () => {
                 <div>
                     <strong>Phone:</strong> <span>{user?.employeePhone}</span>
                 </div>
+                <div>
+                    <strong>Job Profiles:</strong>
+                    <ul>
+                        {jobProfiles?.map((profile, index) => (
+                            <li className={'mb-3'} key={index}>
+                                <strong>Designation:</strong> {profile.designationName} <br/>
+                                <strong>Department:</strong> {profile.departmentName} <br/>
+                                <strong>Manager:</strong> {profile.managerName}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
             </div>
         </div>
     );
