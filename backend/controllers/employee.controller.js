@@ -1,9 +1,9 @@
 import asyncHandler from "../utils/asyncHandler.js";
-import { connection } from "../db/index.js";
+import {connection} from "../db/index.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import bcrypt from "bcrypt";
-import { generateAccessToken, generateRefreshToken } from "../utils/tokens.js";
+import {generateAccessToken, generateRefreshToken} from "../utils/tokens.js";
 
 const generateAccessAndRefreshToken = async (employeeId) => {
     try {
@@ -21,12 +21,115 @@ const generateAccessAndRefreshToken = async (employeeId) => {
         const accessToken = await generateAccessToken(user);
         const refreshToken = await generateRefreshToken(user);
 
-        return { accessToken, refreshToken };
+        return {accessToken, refreshToken};
     } catch (error) {
         console.error("Error in generateAccessAndRefreshToken:", error.message);
         throw new ApiError(500, "Something went wrong while creating tokens.");
     }
 };
+
+// export const loginEmployee = asyncHandler(async (req, res) => {
+//     const {employeeEmail, employeePassword} = req.body;
+//
+//     // Find employee by email
+//     connection.query(
+//         "SELECT * FROM employee WHERE employeeEmail = ?",
+//         [employeeEmail],
+//         async (err, results) => {
+//             if (err || results.length === 0) {
+//                 return res.status(401).json({message: "Invalid email or password"});
+//             }
+//
+//             const employee = results[0];
+//
+//             // Check if the password matches
+//             const isPasswordValid = await bcrypt.compare(employeePassword, employee.employeePassword);
+//             if (!isPasswordValid) {
+//                 return res.status(401).json({message: "Invalid email or password"});
+//             }
+//
+//             // Generate access and refresh tokens
+//             const {accessToken, refreshToken} = await generateAccessAndRefreshToken(employee.employeeId);
+//
+//             // Update refresh token in the database
+//             try {
+//                 await connection.promise().query(
+//                     "UPDATE employee SET employeeRefreshToken = ? WHERE employeeId = ?",
+//                     [refreshToken, employee.employeeId]
+//                 );
+//             } catch (error) {
+//                 console.error("Error updating refresh token:", error.message);
+//                 return res.status(500).json(
+//                     new ApiResponse(500, {}, "Error while updating refresh token")
+//                 );
+//             }
+//
+//             // Fetch employee details without sensitive information
+//             const [employeeData] = await connection.promise().query(
+//                 `SELECT
+//                     e.employeeId,
+//                     e.customEmployeeId,
+//                     e.employeeName,
+//                     e.companyName,
+//                     e.employeeQualification,
+//                     e.experienceInYears,
+//                     e.employeeDOB,
+//                     e.employeeJoinDate,
+//                     e.employeeGender,
+//                     e.employeePhone,
+//                     e.employeeEmail,
+//                     e.employeeAccess,
+//                     e.createdAt,
+//                     e.employeeEndDate,
+//                     d.departmentName,
+//                     ds.designationName,
+//                     m.employeeName AS managerName
+//                 FROM
+//                     employee e
+//                 LEFT JOIN
+//                     employeeDesignation ed ON e.employeeId = ed.employeeId
+//                 LEFT JOIN
+//                     department d ON ed.departmentId = d.departmentId
+//                 LEFT JOIN
+//                     designation ds ON ed.designationId = ds.designationId
+//                 LEFT JOIN
+//                     employee m ON ed.managerId = m.employeeId
+//                 WHERE
+//                     e.employeeId = ?;`,
+//                 [employee.employeeId]
+//             );
+//
+//             if (employeeData.length === 0) {
+//                 return res
+//                     .status(404)
+//                     .json({message: "Employee not found after login."});
+//             }
+//
+//             const employeeDetails = employeeData[0];
+//
+//             // Set accessToken as an HTTP-only cookie
+//             const cookieOptions = {
+//                 httpOnly: true,
+//                 secure: true,
+//                 sameSite: "None",
+//             };
+//
+//             console.log(accessToken.length, refreshToken.length)
+//             // Respond with employee details, accessToken, and refreshToken
+//             return res
+//                 .status(200)
+//                 .cookie("accessToken", accessToken, cookieOptions)
+//                 .cookie("refreshToken", refreshToken, cookieOptions)
+//                 .json(
+//                     new ApiResponse(200, {
+//                         user: employeeDetails,
+//                         accessToken,
+//                         refreshToken,
+//                     })
+//                 );
+//         }
+//     );
+// });
 
 export const loginEmployee = asyncHandler(async (req, res) => {
     const { employeeEmail, employeePassword } = req.body;
@@ -50,6 +153,7 @@ export const loginEmployee = asyncHandler(async (req, res) => {
 
             // Generate access and refresh tokens
             const { accessToken, refreshToken } = await generateAccessAndRefreshToken(employee.employeeId);
+            console.log(accessToken.length, refreshToken.length)
 
             // Update refresh token in the database
             try {
@@ -66,10 +170,25 @@ export const loginEmployee = asyncHandler(async (req, res) => {
 
             // Fetch employee details without sensitive information
             const [employeeData] = await connection.promise().query(
-                `SELECT employeeId, customEmployeeId, employeeName, companyName, employeeQualification,
-                    employeeDOB, employeeJoinDate, experienceInYears, employeeGender, employeePhone,
-                    employeeEmail, employeeAccess, employeeEndDate
-                 FROM employee WHERE employeeId = ?`,
+                `SELECT 
+                    e.employeeId,
+                    e.customEmployeeId, 
+                    e.employeeName, 
+                    e.companyName, 
+                    e.employeeQualification, 
+                    e.experienceInYears, 
+                    e.employeeDOB, 
+                    e.employeeJoinDate, 
+                    e.employeeGender, 
+                    e.employeePhone, 
+                    e.employeeEmail, 
+                    e.employeeAccess, 
+                    e.createdAt,
+                    e.employeeEndDate
+                FROM 
+                    employee e
+                WHERE 
+                    e.employeeId = ?;`,
                 [employee.employeeId]
             );
 
@@ -81,6 +200,25 @@ export const loginEmployee = asyncHandler(async (req, res) => {
 
             const employeeDetails = employeeData[0];
 
+            // Fetch job profiles (department, designation, manager)
+            const [jobProfiles] = await connection.promise().query(
+                `SELECT 
+                    ds.designationName, 
+                    d.departmentName, 
+                    m.employeeName AS managerName
+                FROM 
+                    employeeDesignation ed
+                LEFT JOIN 
+                    department d ON ed.departmentId = d.departmentId
+                LEFT JOIN 
+                    designation ds ON ed.designationId = ds.designationId
+                LEFT JOIN 
+                    employee m ON ed.managerId = m.employeeId
+                WHERE 
+                    ed.employeeId = ?;`,
+                [employee.employeeId]
+            );
+
             // Set accessToken as an HTTP-only cookie
             const cookieOptions = {
                 httpOnly: true,
@@ -88,15 +226,15 @@ export const loginEmployee = asyncHandler(async (req, res) => {
                 sameSite: "None",
             };
 
-            console.log(accessToken, refreshToken)
-            // Respond with employee details, accessToken, and refreshToken
+            // Respond with employee details and job profiles
             return res
                 .status(200)
                 .cookie("accessToken", accessToken, cookieOptions)
                 .cookie("refreshToken", refreshToken, cookieOptions)
                 .json(
                     new ApiResponse(200, {
-                        user: employeeDetails,
+                        employee: employeeDetails,
+                        jobProfiles: jobProfiles,
                         accessToken,
                         refreshToken,
                     })
@@ -124,10 +262,10 @@ export const logoutEmployee = asyncHandler(async (req, res) => {
             .status(200)
             .clearCookie("accessToken", options)
             .clearCookie("refreshToken", options)
-            .json({ status: 200, message: "User logged out" });
+            .json({status: 200, message: "User logged out"});
     } catch (error) {
         console.error("Error logging out user:", error.message);
-        return res.status(500).json({ status: 500, message: "Error logging out user" });
+        return res.status(500).json({status: 500, message: "Error logging out user"});
     }
 });
 
@@ -179,10 +317,10 @@ export const addEmployee = asyncHandler(async (req, res) => {
     // Insert job profiles into employeedesignation table
     const jobProfiles = [];
     for (const profile of employee.jobProfiles) {
-        let { designationId, designationName, departmentId, managerId } = profile;
+        let {designationId, designationName, departmentId, managerId} = profile;
 
         if (!departmentId) {
-            return res.status(400).json({ message: 'Department ID is required.' });
+            return res.status(400).json({message: 'Department ID is required.'});
         }
 
         // Insert designation if designationId is 0
@@ -232,10 +370,10 @@ export const addEmployee = asyncHandler(async (req, res) => {
 });
 
 export const deleteEmployee = asyncHandler(async (req, res) => {
-    const { employeeId } = req.body;
+    const {employeeId} = req.body;
     console.log("called")
     if (!employeeId) {
-        return res.status(400).json({ message: "Employee ID is required" });
+        return res.status(400).json({message: "Employee ID is required"});
     }
 
     // Check if the employee exists
@@ -243,21 +381,21 @@ export const deleteEmployee = asyncHandler(async (req, res) => {
     const [employee] = await connection.promise().query(checkEmployeeQuery, [employeeId]);
 
     if (employee.length === 0) {
-        return res.status(404).json({ message: "Employee not found" });
+        return res.status(404).json({message: "Employee not found"});
     }
 
     // Update employeeEndDate to CURRENT_DATE
     const updateEmployeeQuery = "UPDATE employee SET employeeEndDate = CURRENT_DATE WHERE employeeId = ?";
     await connection.promise().query(updateEmployeeQuery, [employeeId]);
 
-    res.status(200).json({ message: "Employee successfully deactivated" });
+    res.status(200).json({message: "Employee successfully deactivated"});
 });
 
 export const updateEmployee = asyncHandler(async (req, res) => {
-    const { employeeId, updates, jobProfiles } = req.body;
+    const {employeeId, updates, jobProfiles} = req.body;
 
     if (!employeeId || (!updates && !jobProfiles)) {
-        return res.status(400).json({ message: "Employee ID, updates, or jobProfiles are required" });
+        return res.status(400).json({message: "Employee ID, updates, or jobProfiles are required"});
     }
 
     // Check if the employee exists
@@ -265,7 +403,7 @@ export const updateEmployee = asyncHandler(async (req, res) => {
     const [employee] = await connection.promise().query(checkEmployeeQuery, [employeeId]);
 
     if (employee.length === 0) {
-        return res.status(404).json({ message: "Employee not found" });
+        return res.status(404).json({message: "Employee not found"});
     }
 
     // 1. Update the employee table
@@ -290,10 +428,10 @@ export const updateEmployee = asyncHandler(async (req, res) => {
     // 2. Update job profiles (employeedesignation table)
     if (jobProfiles && Array.isArray(jobProfiles)) {
         for (const profile of jobProfiles) {
-            const { designationId, designationName, departmentId, managerId, operation } = profile;
+            const {designationId, designationName, departmentId, managerId, operation} = profile;
 
             if (!departmentId) {
-                return res.status(400).json({ message: "Department ID is required for job profile update." });
+                return res.status(400).json({message: "Department ID is required for job profile update."});
             }
 
             if (operation === "update") {
@@ -319,7 +457,7 @@ export const updateEmployee = asyncHandler(async (req, res) => {
         }
     }
 
-    res.status(200).json({ message: "Employee and job profiles updated successfully" });
+    res.status(200).json({message: "Employee and job profiles updated successfully"});
 });
 
 export const getAllEmployees = asyncHandler(async (req, res) => {
