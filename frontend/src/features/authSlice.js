@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+
 // API Base URL
 const API_BASE_URL = 'http://localhost:3000/api/v1';
 
@@ -20,6 +21,9 @@ const initialState = {
 
 // Login thunk
 export const login = createAsyncThunk('auth/login', async ({ email, password }, { rejectWithValue }) => {
+
+    
+
     try {
         const response = await axios.post(
             `${API_BASE_URL}/employee/loginEmployee`,
@@ -31,7 +35,11 @@ export const login = createAsyncThunk('auth/login', async ({ email, password }, 
                 withCredentials: true,
             }
         );
-        console.log(response.data);
+        
+        console.log(response.data.data.employee);
+        console.log(response.data.data.jobProfiles);
+        
+        
         return response.data.data; // API's `data` field contains user details and job profiles
     } catch (error) {
         console.log(error);

@@ -15,6 +15,16 @@ import AddDepartment from "./pages/department/AddDepartment.jsx";
 import DepartmentProfile from "./pages/department/DepartmentProfile.jsx";
 import Profile from "./pages/Profile.jsx";
 import Modal from "react-modal";
+import Dashboard from "./ticketComponents/Dashboard/Dashboard.jsx";
+import TicketForm from "./ticketComponents/CreateTicket/CreateTicket.jsx";  
+import TicketPage from "./ticketComponents/TicketPage/TicketPage.jsx";
+import FilteredTicketPage from "./ticketComponents/FilteredTicketPage/FilteredTicketPage.jsx";
+import AdminFunctionalities from "./ticketComponents/AdminFunctionalities/AdminFunctionalities.jsx";
+import ManageIssueTypes from "./ticketComponents/ManageIssueTypes/ManageIssueTypes.jsx";
+import ManageBasicSolutions from "./ticketComponents/ManageBasicSolutions/ManageBasicSolutions.jsx";
+import ManageTicketTitles from "./ticketComponents/ManageTicketTitles/ManageTicketTitles.jsx";
+import ManageSendMailTo from "./ticketComponents/ManageSendMailTo/ManageSendMailTo.jsx";
+
 
 Modal.setAppElement('#root');
 
@@ -126,7 +136,71 @@ const App = () => {
                             path="/tickettracking"
                             element={
                                 <PrivateRoute>
-                                    <Profile/>
+                                    <Dashboard/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/createTicket"
+                            element={
+                                <PrivateRoute>
+                                    <TicketForm />
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/ticketPage/:id"
+                            element={
+                                <PrivateRoute>
+                                   <TicketPage />
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/FilteredTicketPage"
+                            element={
+                                <PrivateRoute>
+                                   <FilteredTicketPage />
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/adminFunctionalities"
+                            element={
+                                <PrivateRoute>
+                                   <AdminFunctionalities />
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/issue-types"
+                            element={
+                                <PrivateRoute>
+                                   <ManageIssueTypes />
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/basic-solutions"
+                            element={
+                                <PrivateRoute>
+                                   <ManageBasicSolutions />
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/ticket-titles"
+                            element={
+                                <PrivateRoute>
+                                   <ManageTicketTitles />
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="/send-mail-to"
+                            element={
+                                <PrivateRoute>
+                                   < ManageSendMailTo/>
                                 </PrivateRoute>
                             }
                         />
