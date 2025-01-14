@@ -334,7 +334,7 @@ router.get('/tickets/:id', async (req, res) => {
 router.post('/', upload.array('attachments', 10), async (req, res) => {
   const {
     title, description, details, department,
-    issue_type, priority, status, assignee, employee_id
+    issue_type, priority, status, assignee, employee_id, createdBy
   } = req.body;
 
   // const attachments = req.file ? req.file.path : null; // If the file exists
@@ -343,9 +343,9 @@ router.post('/', upload.array('attachments', 10), async (req, res) => {
     console.log('Received ticket creation request with data:', req.body);
 
     // Insert the main ticket details
-    const insertTicketQuery = `INSERT INTO ticket (title, description, details, department, issue_type, priority, status, assignee, employee_id)
-                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    const [ticketResult] = await db.query(insertTicketQuery, [title, description, details, department, issue_type, priority, status, assignee, employee_id]);
+    const insertTicketQuery = `INSERT INTO ticket (title, description, details, department, issue_type, priority, status, assignee, employee_id, createdBy)
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
+    const [ticketResult] = await db.query(insertTicketQuery, [title, description, details, department, issue_type, priority, status, assignee, employee_id, createdBy]);
     const ticketId = ticketResult.insertId;
 
     // Insert each attachment path into the ticket_attachments table

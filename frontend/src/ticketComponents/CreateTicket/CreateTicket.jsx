@@ -28,6 +28,7 @@ function TicketForm() {
     const [solutionChecks, setSolutionChecks] = useState([]);
     const [allChecked, setAllChecked] = useState(false);
     const employeeId = user?.id || 1;
+    const employeeName = user?.name || '';
 
     const priorities = ['low', 'mid', 'high'];
 
@@ -120,6 +121,7 @@ function TicketForm() {
             formData.append('status', status);
             formData.append('assignee', assignee);
             formData.append('employee_id', employeeId);
+            formData.append('createdBy', employeeName);
     
             // Append each file in the attachments array to formData under the same field name
             attachments.forEach((file) => {

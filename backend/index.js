@@ -18,6 +18,7 @@ import ticketTitlesRoutes from './ticketRoutes/ticket_title.js';
 import basicSolutionsRoutes from './ticketRoutes/basic_solution.js';
 import sendMailToRoutes from './ticketRoutes/sendMailTo.js';
 import ticketDepartmentRoutes from './ticketRoutes/department.js';
+import ticketEmployeeRoutes from './ticketRoutes/employee.js';
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use('/ticketTitles', ticketTitlesRoutes);
 app.use('/basicSolutions', basicSolutionsRoutes);
 app.use('/sendMailTo', sendMailToRoutes);
 app.use('/department', ticketDepartmentRoutes);
+app.use('/employee', ticketEmployeeRoutes);
 
 
 app.use("/api/v1/auth/", authRoutes);
