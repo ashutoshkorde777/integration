@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import {
-  Typography, Card, Accordion, AccordionSummary, AccordionDetails, Table, TableHead, TableRow, TableBody, TableCell
+  Typography, Card, Accordion, AccordionSummary, AccordionDetails, Table, TableHead, TableRow, TableBody, TableCell, Button
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { CiCirclePlus } from 'react-icons/ci';
@@ -9,7 +9,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TicketMessage from '../TicketMessage/TicketMessage.jsx';
 import MessageCard from '../MessageCard/MessageCard.jsx';
 import UserContext from '../../context/UserContext.jsx';
-
+import { jsPDF } from "jspdf";
 // Styled components
 const AccordionContainer = styled(Accordion)(({ theme }) => ({
   backgroundColor: 'transparent',
@@ -82,17 +82,17 @@ const TicketDetails = ({ ticket = {} }) => {
       const fetchDetails = async () => {
         try {
           // Fetch messages
-          const messagesResponse = await fetch(`http://localhost:3000/logs/logs/ticket/${ticket.id}`);
+          const messagesResponse = await fetch(`http://localhost:4000/logs/logs/ticket/${ticket.id}`);
           const messagesData = await messagesResponse.json();
           setMessages(messagesData);
 
           // Fetch assignee history
-          const historyResponse = await fetch(`http://localhost:3000/ticketAssigneeHistory/assignee-history/${ticket.id}`);
+          const historyResponse = await fetch(`http://localhost:4000/ticketAssigneeHistory/assignee-history/${ticket.id}`);
           const historyData = await historyResponse.json();
           setHistoryData(historyData);
 
           // Fetch status history
-          const statusHistoryResponse = await fetch(`http://localhost:3000/ticketStatusHistory/status-history/${ticket.id}`);
+          const statusHistoryResponse = await fetch(`http://localhost:4000/ticketStatusHistory/status-history/${ticket.id}`);
           const statusHistoryData = await statusHistoryResponse.json();
           setStatusHistoryData(statusHistoryData);
           console.log(statusHistoryData);
@@ -190,7 +190,7 @@ const TicketDetails = ({ ticket = {} }) => {
                   <TableRow key={index}>
                     <HistoryTableCell>{entry.old_status}</HistoryTableCell>
                     <HistoryTableCell>{entry.new_status}</HistoryTableCell>
-                    <HistoryTableCell>{entry.changed_by}</HistoryTableCell>
+                    <HistoryTableCell>{entry.changed_by_name}</HistoryTableCell>
                     <HistoryTableCell>{changeDate}</HistoryTableCell>
                     <HistoryTableCell>{changeTime}</HistoryTableCell>
                     <HistoryTableCell>{entry.status_change_reason || 'N/A'}</HistoryTableCell>
@@ -223,9 +223,79 @@ const TicketDetails = ({ ticket = {} }) => {
       )}
     </div>
   );
+   // Function to generate History PDF
+   const generatePDF = () => {
+    const doc = new jsPDF();
+    const currentDate = new Date().toLocaleString();
+    const totalPagesExp = '{total_pages_count_string}';
+
+
+    doc.setFontSize(12);
+    doc.text(`User: ${user.name}`, 10, 10);
+    doc.text(`Date: ${currentDate}`, 10, 15);
+
+    doc.setFontSize(14);
+    doc.text('Assignee History', 10, 30);
+
+    if (historyData.length >= 0) {
+      doc.autoTable({
+        startY: 35,
+        head: [['Changed By', 'Old Assignee', 'New Assignee', 'Assigned Date']],
+        body: historyData.map(entry => [
+          entry.changed_by_name,
+          entry.old_assignee_name || 'N/A',
+          entry.new_assignee_name || 'N/A',
+          new Date(entry.assigned_at).toLocaleDateString(),
+        ]),
+      });
+    } else {
+      doc.setFontSize(12);
+      doc.text('No records available', 10, 40);
+    }
+  
+    // Ticket Status History Table
+    doc.text('Ticket Status History', 10, doc.autoTable.previous.finalY + 10 || 50);
+  
+    if (statusHistoryData.length >= 0) {
+      doc.autoTable({
+        startY: doc.autoTable.previous.finalY + 15 || 55,
+        head: [['Old Status', 'New Status', 'Changed By', 'Change Date']],
+        body: statusHistoryData.map(entry => [
+          entry.old_status,
+          entry.new_status,
+          entry.changed_by_name,
+          new Date(entry.changed_at).toLocaleDateString(),
+        ]),
+      });
+    } else {
+      doc.setFontSize(12);
+      doc.text('No records available', 10, (doc.autoTable.previous.finalY || 55) + 10);
+    }
+    // Handle Page Numbers
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(`${i}/${totalPagesExp}`, 230, 5, { align: 'right' });
+    }
+
+    // Replace placeholder with actual total page count
+    doc.putTotalPages(totalPagesExp);
+
+    doc.save(`Ticket_History_Report_${ticket.id}.pdf`);
+  };
+  
 
   return (
     <div style={{ padding: '16px', position: 'relative' }}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={generatePDF}
+        style={{ marginTop: '20px' }}
+      >
+        Download PDF Report
+      </Button>
       {renderHistoryAccordion(historyData)}
       {renderStatusHistoryAccordion(statusHistoryData)}
 

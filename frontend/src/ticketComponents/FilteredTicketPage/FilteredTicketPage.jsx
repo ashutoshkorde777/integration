@@ -4,10 +4,14 @@ import TicketTable from "../TicketTable/TicketTable";
 import BackButton from "../Backbutton/Backbutton";
 import UserContext from "../context/UserContext";
 import axios from "axios";
-import { TextField, MenuItem, Select, InputLabel, FormControl, Box, Button, Grid } from '@mui/material';
+import {
+  TextField, MenuItem, Select, InputLabel, FormControl, Box, Button, Grid, Menu, MenuItem as DropMenuItem
+} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import * as XLSX from 'xlsx'; // Import the xlsx library
-
+import jsPDF from 'jspdf';
+import 'jspdf-autotable'; // Import for table formatting in PDF
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 
 function FilteredTicketPage() {
@@ -18,16 +22,25 @@ function FilteredTicketPage() {
   const [ticketsType, setTicketsType] = useState(type);
   const [filteredTickets, setFilteredTickets] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterOption, setFilterOption] = useState("");
+  const [filterOption, setFilterOption] = useState("Latest Status");
   const [submittedQuery, setSubmittedQuery] = useState("");
-
-  const { user } = useContext(UserContext);
-  const { currentRole } = useContext(UserContext);
+  
+  const { user, currentRole, updateCurrentRole } = useContext(UserContext);
+  const [selectedRole, setSelectedRole] = useState(() => {
+    // Default to "Executive" role if it exists in the user's roles
+    return currentRole || null;
+    });
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const handleRoleSelection = (role,updateCurrentRole) => {
+    updateCurrentRole(role);
+    setSelectedRole(role); // Set selected role
+    };
 
   // Function to fetch tickets based on role and user info
   const fetchTickets = async () => {
     try {
-      // let endpoint = "http://localhost:3000/tickets/tickets";
+      // let endpoint = "http://localhost:4000/tickets/tickets";
       // let params = {};
 
       // if (currentRole?.designation === "Executive") {
@@ -99,6 +112,8 @@ function FilteredTicketPage() {
     setSearchQuery("");
     setSubmittedQuery("");
     setFilterOption("");
+    setStartDate(""); // Clear the start date
+  setEndDate("");   // Clear the end date
   };
 
 
@@ -210,14 +225,14 @@ function FilteredTicketPage() {
     let ft = [...tickets];
     switch (ticketsType) {
       case 'Overdue':
-        if (currentRole.designation === 'Assignee') {
+        if (currentRole?.designation === 'Assignee') {
           ft = tickets.filter(ticket => new Date(ticket.ticket_created_at) < new Date() && ticket.status !== 'close' && ticket.assignee === user.name);
         } else {
           ft = tickets.filter(ticket => new Date(ticket.ticket_created_at) < new Date() && ticket.status !== 'close');
         }
         break;
       case 'Due today':
-        if (currentRole.designation === 'Assignee') {
+        if (currentRole?.designation === 'Assignee') {
           ft = tickets.filter(ticket => {
             const ticketDate = new Date(ticket.ticket_created_at);
             const sevenDaysAgo = new Date();
@@ -234,14 +249,14 @@ function FilteredTicketPage() {
         }
         break;
       case 'Open':
-        if (currentRole.designation === 'Assignee') {
+        if (currentRole?.designation === 'Assignee') {
           ft = tickets.filter(ticket => ticket.status === 'open' && ticket.assignee === user.name);
         } else {
           ft = tickets.filter(ticket => ticket.status === 'open');
         }
         break;
       case 'On hold':
-        if (currentRole.designation === 'Assignee') {
+        if (currentRole?.designation === 'Assignee') {
           ft = tickets.filter(ticket => ticket.status === 'hold' && ticket.assignee === user.name);
         } else {
           ft = tickets.filter(ticket => ticket.status === 'hold');
@@ -249,14 +264,14 @@ function FilteredTicketPage() {
         break;
       case 'Unassigned':
         // Fetch all department tickets and filter out unassigned ones for Assignee role
-        if (currentRole.designation === 'Assignee') {
+        if (currentRole?.designation === 'Assignee') {
           ft = tickets.filter(ticket => !ticket.assignee && ticket.department === currentRole.department);
         } else {
           ft = tickets.filter(ticket => !ticket.assignee);
         }
         break;
       case 'All tickets':
-        if (currentRole.designation === 'Assignee') {
+        if (currentRole?.designation === 'Assignee') {
           ft = tickets.filter(ticket => ticket.assignee === user.name);
         } else {
           ft = tickets;
@@ -267,13 +282,13 @@ function FilteredTicketPage() {
     }
 
     // Apply the search and dropdown filters sequentially
-    const searchFilteredTickets = applySearchFilter(ft);
+    const dateFilteredTickets = applyDateFilter(ft); // Apply date filter
+    const searchFilteredTickets = applySearchFilter(dateFilteredTickets);
     const finalFilteredTickets = applyDropdownFilter(searchFilteredTickets);
 
     // Update the state with the final filtered tickets
     setFilteredTickets(finalFilteredTickets);
-
-  }, [tickets, ticketsType, currentRole, user, submittedQuery, filterOption]); // Adding tickets as a dependency here to trigger the update
+}, [tickets, ticketsType, currentRole, user, submittedQuery, filterOption, startDate, endDate]);
 
   // Handle search bar input and update the state
   const handleSearchChange = (e) => {
@@ -284,37 +299,119 @@ function FilteredTicketPage() {
   const handleFilterChange = (e) => {
     setFilterOption(e.target.value); // Update the filter option
   };
+ // Dropdown Menu State
+ const [reportMenuAnchorEl, setReportMenuAnchorEl] = useState(null);
+ const [filterMenuAnchorEl, setFilterMenuAnchorEl] = useState(null);
 
+ const handleReportMenuOpen = (event) => setReportMenuAnchorEl(event.currentTarget);
+const handleReportMenuClose = () => setReportMenuAnchorEl(null);
 
+const handleFilterMenuOpen = (event) => setFilterMenuAnchorEl(event.currentTarget);
+const handleFilterMenuClose = () => setFilterMenuAnchorEl(null);
+
+ 
 
   const exportToExcel = () => {
-    // Define a dynamic sheet name based on the current filter and status
-    let sheetName = 'Report';
-
-    if (filterOption) {
-      sheetName = `${filterOption} - Tickets`;
-    }
-
-    // Optionally, add status information to the sheet name if there's a status filter or ticket type
-    if (ticketsType) {
-      sheetName = `${sheetName} - ${ticketsType}`;
-    }
-
-    // Convert filtered tickets to Excel sheet format
-    const ws = XLSX.utils.json_to_sheet(filteredTickets);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, sheetName); // Use the dynamic sheet name
-    XLSX.writeFile(wb, `${sheetName}.xlsx`); // Save the file with the dynamic name
+    const worksheet = XLSX.utils.json_to_sheet(filteredTickets);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tickets");
+    XLSX.writeFile(workbook, `Tickets_Report_${new Date().toLocaleDateString()}.xlsx`);
+    handleMenuClose();
   };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const totalPagesExp = '{total_pages_count_string}';
+
+    doc.setFontSize(12);
+    // Add user's name at the top left
+    doc.text(`User: ${user.name}`, 14, 10);
+    
+    // Add date and time at the top right
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 150, 10, { align: 'right' });
+
+    // Title for the report
+    doc.text("Tickets Report", 14, 20);
+
+    // Add table data
+    doc.autoTable({
+        startY: 30,
+        head: [['ID', 'Title', 'Status','Created By','Created At','Assigned To']],
+        body: filteredTickets.map(ticket => [
+            ticket.id,
+            ticket.title,
+            ticket.status,
+            ticket.createdBy,
+            new Date(ticket.ticket_created_at).toLocaleString(),
+            ticket.assignee
+        ]),
+    });
+     // Handle Page Numbers
+     const pageCount = doc.internal.getNumberOfPages();
+     for (let i = 1; i <= pageCount; i++) {
+       doc.setPage(i);
+       doc.setFontSize(8);
+       doc.text(`${i}/${totalPagesExp}`, 230, 10, { align: 'right' });
+     }
+ 
+     // Replace placeholder with actual total page count
+     doc.putTotalPages(totalPagesExp);
+
+    doc.save(`Tickets_Report_${new Date().toLocaleDateString()}.pdf`);
+    handleMenuClose();
+};
+
+
+  // Function to filter tickets by selected dates
+  const applyDateFilter = (ticketsList) => {
+    if (!startDate || !endDate) return ticketsList;
+
+    const start = new Date(startDate);
+  const end = new Date(endDate);
+  start.setHours(0,0,0,0);
+    end.setHours(23, 59, 59, 999);
+
+    return ticketsList.filter(ticket => {
+      const ticketDate = new Date(ticket.ticket_created_at);
+      return ticketDate >= start && ticketDate <= end;
+    });
+    handleFilterClose();
+  };
+  
+
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '16px', flexDirection: 'row' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent:'space-between', padding: '16px', flexDirection: 'row' }}>
         <BackButton />
-      </div>
+        <div className="dropdown">
+          <button
+            className="dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            {(selectedRole?.designation ?? "Select") + " " + (selectedRole?.department ?? "Role")}
+
+          </button>
+          <ul className="dropdown-menu">
+            {user?.roles?.map((role, index) => (
+              <li key={index}>
+                <button
+                  className="dropdown-item"
+                  onClick={() => handleRoleSelection(role,updateCurrentRole)}
+                >
+                  {role.designation + "-" + role.department}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
 
       {/* Search bar and Filter dropdown in the same row */}
       <Box display="flex" justifyContent="space-between" alignItems="center" margin={5} >
+        
         <Grid container spacing={0} alignItems="center">
           {/* Search bar */}
           <Grid item>
@@ -353,37 +450,74 @@ function FilteredTicketPage() {
               Clear
             </Button>
           </Grid>
+          <Button
+           sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            padding: '6px 16px',
+            marginLeft: 1,
+            backgroundColor: '#0061a1',
+            color: 'white',
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: '#004c82',
+            }
+          }}
+          variant="contained"
+          onClick={handleReportMenuOpen}//Ensure this opens the menu
+        >
+          <span className="action-icon"> {/* Add your icon here */} </span>
+          Download Report
+        </Button>
+        <Menu anchorEl={reportMenuAnchorEl} open={Boolean(reportMenuAnchorEl)} onClose={handleReportMenuClose}>
+          <DropMenuItem onClick={exportToPDF}> PDF  </DropMenuItem>
+          <DropMenuItem onClick={exportToExcel}>Excel</DropMenuItem>
+        </Menu>
 
-          <Grid item>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={exportToExcel}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '6px 16px',
-                marginLeft: 1,
-                backgroundColor: '#0061a1',
-                color: 'white',
-                cursor: 'pointer',
-                '&:hover': {
-                  backgroundColor: '#004c82',
-                }
-              }}
-            >
-              <span className="action-icon"> {/* Add your icon here */} </span>
-              Download Report
-            </Button>
-          </Grid>
-
-
+          
           {/* Spacer to push the dropdown to the right */}
           <Grid item xs />
+          <Button 
+           sx={{
+            marginRight:1,       
+            height: 40,//Increases button height
+          }}
+          variant="outlined" 
+          startIcon={<CalendarTodayIcon />} 
+          onClick={handleFilterMenuOpen}
+        >
+          Filter by Date
+        </Button>
+
+        <Menu anchorEl={filterMenuAnchorEl} open={Boolean(filterMenuAnchorEl)} onClose={handleFilterMenuClose}>
+          <Box sx={{ p: 2 }}>
+      <TextField
+        label="Start Date"
+        type="date"
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+        fullWidth
+        InputLabelProps={{ shrink: true }}
+      />
+      <TextField
+        label="End Date"
+        type="date"
+        value={endDate}
+        onChange={(e) => setEndDate(e.target.value)}
+        fullWidth
+        InputLabelProps={{ shrink: true }}
+        sx={{ mt: 2 }}
+      />
+          <Button onClick={handleFilterMenuClose} variant="contained" sx={{ mt: 2 }}>
+        Apply Filter
+      </Button>
+    </Box>
+  </Menu>
 
           {/* Filter dropdown */}
           <Grid item>
+          
             <FormControl variant="outlined" size="small" style={{ width: 180 }}>
               <InputLabel id="filter-label">Sort by</InputLabel>
               <Select

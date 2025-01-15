@@ -42,3 +42,28 @@
   justify-content: space-between;
   align-items: center;
 }
+
+/* Create Ticket Card Styling */
+.create-ticket-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5; /* Light gray background */
+  padding: 12px 20px; /* Spacing inside the card */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.create-ticket-card:hover {
+  background-color: #e0e0e0; /* Slightly darker on hover */
+  transform: translateY(-2px); /* Slight upward motion */
+}
+
+/* Card Body Styling */
+.create-ticket-body {
+  font-size: 16px;
+  font-weight: 500; /* Medium weight */
+  color: #333; /* Dark gray text */
+  text-align: center;
+}

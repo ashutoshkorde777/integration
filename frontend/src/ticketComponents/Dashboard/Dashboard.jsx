@@ -11,10 +11,7 @@ import { CiCirclePlus } from "react-icons/ci";
 
 const NavigationHeader = ({ title, subtitle, user, selectedRole }) => (
   <Box display="flex" alignItems="center" padding={{ xs: '8px', sm: '16px' }} flexDirection={{ xs: 'column', sm: 'row' }} gap={2}>
-    {/* <NavLink to="/mainPage" style={{ textDecoration: 'none', color: '#1A73E8', fontWeight: 'bold', fontSize: '18px', padding: '8px 16px', border: '1px solid #1A73E8', borderRadius: '4px' }}>
-      Main Page
-    </NavLink> */}
-    {selectedRole.designation==="Admin" && <NavLink to="/adminFunctionalities" style={{ textDecoration: 'none', color: '#1A73E8', display: 'flex', alignItems: 'center', gap: '8px' }}>
+    {selectedRole?.designation==="Admin" && <NavLink to="/adminFunctionalities" style={{ textDecoration: 'none', color: '#1A73E8', display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div className="create-ticket-card">
         <div className="create-ticket-body">Admin Functionalities</div>
       </div>
@@ -126,22 +123,8 @@ const fetchTickets = async (role, user, setTickets, setDepartmentTickets, setTic
       params = { assignee: user.name, assigneeDepartment: role.department };
     }
 
-    // const response = await axios.get(endpoint, { params });
-    // setTickets(response.data);
-    // const response2 = await axios.get(`http://localhost:3000/tickets/tickets/department/${role.department}`);
-    // setDepartmentTickets(response2.data);
 
     let endpoint = "http://localhost:3000/tickets/tickets/summary";
-    // let params2 = {};
-
-    // if (role?.designation === "Executive") {
-    //   params2 = { employee_id: user.id };
-    // } else if (role?.designation === "HOD") {
-    //   params2 = { department: role.department };
-    // } else if (role?.designation === "Assignee") {
-      
-    //   params2 = { assignee: user.name, assigneeDepartment:role.department};
-    // }
 
     const response = await axios.get(endpoint, { params });
     setTicketSummary(response.data);
@@ -192,33 +175,26 @@ function App() {
 
     switch (label) {
       case 'Overdue':
-        // filteredTickets = tickets.filter(ticket => new Date(ticket.ticket_created_at) < new Date() && ticket.status !== 'close');
         type = 'Overdue';
         break;
       case 'Due today':
-        // filteredTickets = tickets.filter(ticket => new Date(ticket.ticket_created_at).toDateString() === new Date().toDateString());
         type = 'Due today';
         break;
       case 'Open':
-        // filteredTickets = tickets.filter(ticket => ticket.status === 'open');
         type = 'Open';
         break;
       case 'On hold':
-        // filteredTickets = tickets.filter(ticket => ticket.status === 'hold');
         type = 'On hold';
         break;
       case 'Unassigned':
         if (selectedRole?.designation === "Assignee") {
-          // filteredTickets = departmentTickets.filter(ticket => !ticket.assignee);
           type = 'Unassigned';
         } else {
-          // filteredTickets = tickets.filter(ticket => !ticket.assignee);
           type = 'Unassigned';
         }
 
         break;
       case 'All tickets':
-        // filteredTickets = tickets;
         type = 'All tickets';
         break;
       default:
@@ -230,13 +206,7 @@ function App() {
 
   // Calculate summary data
   const summaryData = useMemo(() => {
-    // const overdue = tickets.filter(ticket => new Date(ticket.ticket_created_at) < new Date() && ticket.status !== 'close').length;
-    // const dueToday = tickets.filter(ticket => new Date(ticket.ticket_created_at).toDateString() === new Date().toDateString()).length;
-    // const open = tickets.filter(ticket => ticket.status === 'open').length;
-    // const onHold = tickets.filter(ticket => ticket.status === 'hold').length;
-    // const unassigned = (selectedRole?.designation === "Assignee") ? departmentTickets.filter(ticket => !ticket.assignee).length : tickets.filter(ticket => !ticket.assignee).length;
-    // const allTickets = tickets.length;
-
+    
     return [
       { label: 'Overdue', value: ticketSummary?.summary?.overdue ?? 0 },
       { label: 'Due today', value: ticketSummary?.summary?.dueToday ?? 0 },
@@ -249,11 +219,7 @@ function App() {
 
   // Calculate status data
   const statusData = useMemo(() => {
-    // const statusCounts = tickets.reduce((acc, ticket) => {
-    //   acc[ticket.status] = (acc[ticket.status] || 0) + 1;
-    //   return acc;
-    // }, {});
-
+    
     const total = ticketSummary?.summary?.allTickets ?? 0;
 
     // Provide a fallback to an empty array if `statusData` is undefined or null
@@ -267,10 +233,6 @@ function App() {
 
   // Calculate category-wise data
   const categories = useMemo(() => {
-    // const categoryCounts = tickets.reduce((acc, ticket) => {
-    //   acc[ticket.issue_type] = (acc[ticket.issue_type] || 0) + 1;
-    //   return acc;
-    // }, {});
 
     const total = ticketSummary?.summary?.allTickets ?? 0;
 
@@ -287,8 +249,20 @@ function App() {
 
   }, [tickets,ticketSummary]);
 
+  if (!selectedRole) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <Typography variant="h6" color="textSecondary">
+          Loading...
+        </Typography>
+      </Box>
+    );
+  }
+  
+
   return (
     <Box p={{ xs: '8px', sm: '16px' }}>
+      
       <div className="topline">
         <NavigationHeader title={'back'} subtitle={'back'} user={user} selectedRole={selectedRole} />
         <div className="dropdown">
@@ -298,7 +272,8 @@ function App() {
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            {selectedRole.designation + " " + selectedRole.department}
+            {(selectedRole?.designation ?? "Select") + " " + (selectedRole?.department ?? "Role")}
+
           </button>
           <ul className="dropdown-menu">
             {user?.roles?.map((role, index) => (

@@ -67,7 +67,7 @@ const DonutChart = ({priorityCount=[]}) => {
               {entry.name}
             </Typography>
             <Typography variant="body2" style={{ color: '#757575' }}>
-              {((entry.value / 92) * 100).toFixed(0)}%
+            {((entry.value / data.reduce((acc, curr) => acc + curr.value, 0)) * 100).toFixed(0)}%
             </Typography>
           </Box>
         ))}

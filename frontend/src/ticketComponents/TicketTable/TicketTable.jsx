@@ -348,7 +348,7 @@ const TicketTable = ({
                           {(user.permissions.charAt(5) ==='1' && <MenuItem value="close">Closed</MenuItem>) || ((row.status === "close") && <MenuItem value="close">Closed</MenuItem>)}
                           {(user.permissions.charAt(5) ==='1' && <MenuItem value="hold">Hold</MenuItem>) || ((row.status === "hold") && <MenuItem value="hold">Hold</MenuItem>)}
                           {(user.permissions.charAt(5) ==='1' && <MenuItem value="pending">Pending</MenuItem>) || ((row.status === "pending") && <MenuItem value="pending">Pending</MenuItem>)}
-                          {user.permissions.charAt(8) ==='1' && row.status === 'close' && <MenuItem value="reopened">Reopened</MenuItem>}
+                          {user.permissions.charAt(8) ==='1' && row.status === 'close' && new Date() - new Date(row.last_status_updated_at) < 3 * 24 * 60 * 60 * 1000 && <MenuItem value="reopened">Reopened</MenuItem> }
                         </StyledSelect>
                       ) : (
                         <StatusChip status={row.status}>{row.status}</StatusChip>

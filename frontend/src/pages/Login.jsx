@@ -22,43 +22,11 @@ const Login = () => {
         dispatch(login({
             email,
             password,
-        })).then((data) => {
-            console.log('Login successful:', data.payload);
-            // Handle successful login (e.g., navigate to another page)
-            const roles = data.payload.jobProfiles.map(profile => ({
-                department: profile.departmentName,
-                designation: profile.designationName
-            }));
-    
-            const user = {	
-                contact: data.payload.employee.employeePhone,
-                email: data.payload.employee.employeeEmail,
-                id: data.payload.employee.employeeId,
-                name: data.payload.employee.employeeName,
-                permissions:data.payload.employee.employeeAccess.split(',')[3],
-                roles : roles
-                
-            }
-    
-            console.log(user);
-    
-            
-            
-            const tempRole = user.roles.find((role) => role.designation === "Executive");
-            console.log(tempRole);
-    
-            initializeUser(user, tempRole.department, tempRole.designation);
-        })
-        .catch((error) => {
-            console.error('Login failed:', error.message);
-            // Handle login error (e.g., show an error message to the user)
-        });
+        }))
+        
     
 
         
-
-        
-
 
         // try {
         //     // Make login request with email and password
