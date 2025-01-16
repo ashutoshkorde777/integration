@@ -153,6 +153,17 @@ function App() {
     
     
   };
+  useEffect(() => {
+    
+    setSelectedRole(currentRole);
+    // const interval = setInterval(() => {
+    //   if (currentRole) {
+    //     setSelectedRole(currentRole);
+    //   }
+    // }, 10000);
+
+    return () => {}; // Clean up on component unmount
+  }, [currentRole]);
 
   useEffect(() => {
     if (selectedRole && user) {
@@ -166,7 +177,7 @@ function App() {
     }, 10000);
 
     return () => clearInterval(interval); // Clean up on component unmount
-  }, [selectedRole, user]);
+  }, [selectedRole, user, currentRole]);
 
   // Function to handle card clicks and navigate with filtered tickets
   const handleCardClick = (label) => {
@@ -249,19 +260,13 @@ function App() {
 
   }, [tickets,ticketSummary]);
 
-  if (!selectedRole) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <Typography variant="h6" color="textSecondary">
-          Loading...
-        </Typography>
-      </Box>
-    );
-  }
+  
   
 
   return (
+    
     <Box p={{ xs: '8px', sm: '16px' }}>
+    {console.log("rendering dashboard")}
       
       <div className="topline">
         <NavigationHeader title={'back'} subtitle={'back'} user={user} selectedRole={selectedRole} />

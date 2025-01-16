@@ -3,7 +3,7 @@ import { IconButton, Typography, Breadcrumbs, Link } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 
-const BackButton = () => {
+const BackButton = ({ title = "Ticket details" }) => {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
@@ -19,7 +19,7 @@ const BackButton = () => {
         <Link color="inherit" href="/" onClick={handleBackClick} style={{ textDecoration: 'none' }}>
           <Typography color="textSecondary">Dashboard</Typography>
         </Link>
-        <Typography color="textPrimary">Ticket details</Typography>
+        <Typography color="textPrimary">{title}</Typography>
       </Breadcrumbs>
     </div>
   );

@@ -109,6 +109,11 @@ function TicketForm() {
             alert('Please try all basic solutions before submitting the ticket.');
             return;
         }
+
+        if(!title || !description || !details || !department || !issueType || !priority || !status ) {
+            alert('Please fill in all required fields.');
+            return;
+        }
     
         try {
             const formData = new FormData();
@@ -168,7 +173,7 @@ function TicketForm() {
     return (
         <div className="content-container">
             <div className="content">
-                <BackButton />
+                <BackButton title={"Create Ticket"} />
             </div>
 
             <div className="content">

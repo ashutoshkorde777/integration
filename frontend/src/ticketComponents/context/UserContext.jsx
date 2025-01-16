@@ -13,13 +13,17 @@ export const UserProvider = ({ children }) => {
     const jobProfiles = useSelector((state) => state.auth.jobProfiles);
 
     // Initialize user with roles
-    const initializeUser = async (user, department, role) => {
+    const initializeUser = async (user, departmentName, role) => {
+        console.log("Initializing user in UserContext!");
+        console.log("User:", user);
+        console.log("Department:", departmentName);
         setUser(user);
         setIsAuthenticated(true);
-        const permission = await user.roles.find(obj => obj.department === department && obj.designation === role)?.permissions;
-        setCurrentRole({ department, designation: role, permissions: permission } || null);
+        setCurrentRole({ department:departmentName, designation: role });
+        const currentDate = new Date();
+            console.log(currentDate.toString());
         console.log(currentRole);
-        console.log('Current Role:', { department, designation: role, permissions: permission });
+        // console.log('Current Role:', { department, designation: role, permissions: permission });
     };
 
     const updateCurrentRole = (role) => {
@@ -31,6 +35,15 @@ export const UserProvider = ({ children }) => {
         setIsAuthenticated(false);
         setCurrentRole(null);
     };
+
+    useEffect(() => {
+        if (currentRole) {
+            const currentDate = new Date();
+            console.log(currentDate.toString());
+            console.log('Current Role:', currentRole);
+            // Trigger any necessary actions when currentRole changes
+        }
+    }, [currentRole]);
 
     // useEffect to initialize user when data from Redux changes or after the page reloads
     useEffect(() => {
@@ -54,7 +67,17 @@ export const UserProvider = ({ children }) => {
                 roles: roles
             };
 
-            const tempRole = user2.roles.find((role) => role.designation === "Executive");
+            let tempRole = user2.roles.find((role) => role.designation === "Executive");
+            if(!tempRole){
+                if(user2.roles.length > 0){
+                    tempRole = user2.roles[0];
+                }
+            }
+
+                
+            
+            console.log("Temp Role:", tempRole);
+            console.log("User2:", user2);
             initializeUser(user2, tempRole?.department, tempRole?.designation);
         }
         

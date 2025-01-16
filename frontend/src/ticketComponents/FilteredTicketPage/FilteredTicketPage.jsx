@@ -209,7 +209,12 @@ function FilteredTicketPage() {
     return filteredList;
   };
 
-
+  useEffect(() => {
+      
+      setSelectedRole(currentRole);
+      
+      return () => {}; // Clean up on component unmount
+    }, [currentRole]);
 
   useEffect(() => {
     if (currentRole && user) {
@@ -383,7 +388,8 @@ const handleFilterMenuClose = () => setFilterMenuAnchorEl(null);
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent:'space-between', padding: '16px', flexDirection: 'row' }}>
-        <BackButton />
+      <BackButton title={`${ticketsType} Tickets`} />
+
         <div className="dropdown">
           <button
             className="dropdown-toggle"

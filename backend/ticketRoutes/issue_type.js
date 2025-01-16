@@ -75,7 +75,8 @@ router.post('/issue_types', async (req, res) => {
       res.status(404).send('Department not found');
       return;
     }
-    const department_id = departmentResult[0].id;
+    const department_id = departmentResult[0].departmentId;
+    
 
     // Insert issue type
     const [results] = await db.query('INSERT INTO issue_type (department_id, issue) VALUES (?, ?)', [department_id, issue]);

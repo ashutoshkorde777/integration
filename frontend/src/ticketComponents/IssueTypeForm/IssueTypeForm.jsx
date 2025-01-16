@@ -48,7 +48,7 @@ const IssueTypeForm = ({ issueType, onSave, onClose }) => {
     <Box p={3}>
       <Autocomplete
         freeSolo
-        options={departments.map((dept) => dept.name)}
+        options={departments.map((dept) => dept.departmentName)}
         value={formData.department_name}
         onChange={handleAutocompleteChange}
         renderInput={(params) => (

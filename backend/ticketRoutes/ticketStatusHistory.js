@@ -19,7 +19,7 @@ router.get('/status-history/:ticketId', async (req, res) => {
                 tsh.new_status,
                 tsh.status_change_reason,
                 tsh.email_sent_to_owner,
-                tsh.email_sent_to_manager,
+                tsh.email_sent_to_manager,   
                 tsh.changed_at
             FROM 
                 ticket_status_history tsh

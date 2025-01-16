@@ -37,6 +37,8 @@ const AdminFunctionalities = () => {
     navigate('/employee-form');
   };
 
+  
+
   return (
     <Box p={{ xs: '8px', sm: '16px' }} sx={{ fontFamily: 'Inter, sans-serif' }}>
       {/* Header with Back Button and Breadcrumb */}
@@ -62,28 +64,47 @@ const AdminFunctionalities = () => {
       <Grid container spacing={2}>
         {/* Manage Issue Types Card */}
         <Grid item xs={12} sm={6} md={4}>
-          <Card
-            elevation={3}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              textAlign: 'center',
-              cursor: 'pointer', // Add cursor pointer for interactivity
-            }}
-            onClick={handleIssueTypes} // Trigger action on card click
-          >
-            <CardContent>
-              <GoIssueDraft style={{ fontSize: '3rem', color: '#0061A1' }} />
-              <GoIssueClosed style={{ fontSize: '3rem', color: '#0061A1', marginLeft: '8px' }} />
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 2 }}>
-                Manage Issue Types
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#777', mt: 1 }}>
-                Define and manage different types of issues for your system.
-              </Typography>
-            </CardContent>
-          </Card>
+        <Card
+      elevation={3}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center',
+        cursor: 'pointer',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        '&:hover': {
+          transform: 'scale(1.05)',
+          boxShadow: 6,
+        },
+      }}
+      onClick={handleIssueTypes}
+    >
+      <CardContent>
+        {/* Icons Container */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'FlexStart',
+            alignItems: 'center',
+            gap: 2, // Spacing between icons
+            mb: 2,
+            
+          }}
+        >
+          <GoIssueDraft style={{ fontSize: '3rem', color: '#0061A1' }} />
+          <GoIssueClosed style={{ fontSize: '3rem', color: '#0061A1' }} />
+        </Box>
+        {/* Title */}
+        <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 2 }}>
+          Manage Issue Types
+        </Typography>
+        {/* Description */}
+        <Typography variant="body2" sx={{ color: '#777', mt: 1 }}>
+          Define and manage different types of issues for your system.
+        </Typography>
+      </CardContent>
+    </Card>
         </Grid>
 
         {/* Manage Basic Solutions Card */}
@@ -96,6 +117,12 @@ const AdminFunctionalities = () => {
               alignItems: 'center',
               textAlign: 'center',
               cursor: 'pointer', // Add cursor pointer for interactivity
+              
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              '&:hover': {
+              transform: 'scale(1.05)',
+              boxShadow: 6,
+        },
             }}
             onClick={handleBasicSolutions} // Trigger action on card click
           >
@@ -121,6 +148,12 @@ const AdminFunctionalities = () => {
               alignItems: 'center',
               textAlign: 'center',
               cursor: 'pointer', // Add cursor pointer for interactivity
+              
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        '&:hover': {
+          transform: 'scale(1.05)',
+          boxShadow: 6,
+        },
             }}
             onClick={handleTicketTitles} // Trigger action on card click
           >
@@ -136,31 +169,7 @@ const AdminFunctionalities = () => {
           </Card>
         </Grid>
 
-        {/* Manage Employees Card */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Card
-            elevation={3}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              textAlign: 'center',
-              cursor: 'pointer', // Add cursor pointer for interactivity
-            }}
-            onClick={handleEmployees} // Trigger action on card click
-          >
-            <CardContent>
-              <FaFemale style={{ fontSize: '3rem', color: '#0061A1' }} />
-              <FaMale style={{ fontSize: '3rem', color: '#0061A1', marginLeft: '8px' }} />
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 2 }}>
-                Manage Employees
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#777', mt: 1 }}>
-                Manage employee details and roles in your organization.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+        
 
         {/* Manage Send Mail To Card */}
         <Grid item xs={12} sm={6} md={4}>
@@ -172,6 +181,12 @@ const AdminFunctionalities = () => {
               alignItems: 'center',
               textAlign: 'center',
               cursor: 'pointer', // Add cursor pointer for interactivity
+              
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        '&:hover': {
+          transform: 'scale(1.05)',
+          boxShadow: 6,
+        },
             }}
             onClick={handleSendMailTo} // Trigger action on card click
           >
